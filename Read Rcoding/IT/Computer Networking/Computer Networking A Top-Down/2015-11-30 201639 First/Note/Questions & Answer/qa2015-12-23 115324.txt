@@ -14,3 +14,5 @@ Time: 2015-12-23 22:01:50
 	A Receiving process receives these Messages and respond by sending message back. 
 
 	接收进程在哪些情况下需要应答发送进程，为什么?
+	
+############### added by marvin at 2016-1-7 15:47:12 #############
