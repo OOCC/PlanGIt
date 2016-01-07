@@ -1,4 +1,4 @@
-Title: Processes Communicating
+﻿Title: Processes Communicating
 Time: 2015-12-23 22:01:50
 
 1. 进程
@@ -15,4 +15,5 @@ Time: 2015-12-23 22:01:50
 
 	接收进程在哪些情况下需要应答发送进程，为什么?
 	
-############### added by marvin at 2016-1-7 15:47:12 #############
+############### remote: added by marvin at 2016-1-7 15:47:12 #############
+############### local: added by marvin at 2016-1-7 15:48:27 #############
