@@ -1,0 +1,16 @@
+Title: Processes Communicating
+Time: 2015-12-23 22:01:50
+
+1. 进程
+	抽象程序的执行过程，这样就能描述和研究程序的执行过程。
+
+2. 同一操作系统中的进程间通信技术中的某一种，如管道的原理，如全双工，单工或者管道破裂如何处理等等？
+	(更适合Google It?)
+
+3. A sending process creates and sends Message.
+	
+	发送进程产生了哪些(什么样的)消息？
+
+	A Receiving process receives these Messages and respond by sending message back. 
+
+	接收进程在哪些情况下需要应答发送进程，为什么?
