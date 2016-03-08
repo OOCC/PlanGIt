@@ -1,0 +1,50 @@
+需求：
+		1. 通信协议，包括index,lenth,body		
+			
+			NIS\src\include\net_transport_protocol\protocol.h
+
+		2. MNC校验，输入的MNC必须是2-3位，服务器客户端都要检查
+
+														-->合法，继续解析
+			输入MNC字符串-->解析MNC码-->判断MNC码长度--
+														--非法，停止解析，提示用户重新输入MNC字符串
+
+		3. 增加IMSI模式，IMSI是15位的十进制数组成（MNC 和 IMSI 合称NAI）
+
+			客户端： 
+				1. MNC
+				2. IMSI
+				3. EXIT
+			
+			服务器：
+				6. Setting (见服务器菜单(MENU))
+					1. type
+						1> MNC
+						2> IMSI
+					2. mode
+						1> ENABLED
+						2> DISABLED
+						
+		4. 增加区间模式，用~表示区间，例如001~003
+			(注意：限定最大数量，超过数量返回错误信息)
+			
+			疑问：区间模式是哪端在用？
+			
+				1、服务器端批量增加号码
+					服务器：
+						<mnc> 001~003 
+				2、客户端批量查询号码
+					客户端：	
+						<mnc> 001~003
+			
+		5. 增加模式选择：DISABLE和ENABLED。当DISABLED时，禁止ADD操作，ENABLED时才能ADD，并且ENABLED时还要指定模式，是MNC模式还是IMSI模式。
+			
+			服务器：
+				MENU:					mode:ENABLED type: MNC				 
+					 1. Add
+					 2. Del
+					 3. Mod
+					 4. List
+					 5. History
+					 6. Setting
+					 7. Quit
