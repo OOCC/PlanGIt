@@ -5,12 +5,12 @@
 	> Created Time: Mon 11 Apr 2016 05:33:34 PM CST
  ************************************************************************/
 
-#ifndef _USRPRINTF_H
-#define _USRPRINTF_H
+#ifndef _USR_PRINTF_H
+#define _USR_PRINTF_H
 
 #include <stdio.h>
 #include <time.h>
-#include "type_def,h"
+#include "type_def.h"
 
 
 #define TIME_STR_LEN        64
@@ -29,16 +29,17 @@
 //out:
 //ret:
 //note:
-#define UsrPrintf(format, args...)\
-{\
+#define UsrPrintf(format, args...) \
+{ \
 	int8 timeStr[TIME_STR_LEN]={0}; \
 	int32 timeStrLen; \
 	time_t curTime; \
 	\
-	time(curTime);\
-	strftime(timeStr， timeStrLen, "%Y%m%d%H%M%S", localtime(&curTime); /* 格式化当前时间 */ \
+	time(&curTime); \
+	timeStrLen=sizeof(timeStr); \
+    strftime(timeStr,  timeStrLen, "%Y%m%d%H%M%S", localtime(&curTime));  \
 	\
-	USER_PRINT_BASE("[%s %s----line %d]%s"format, timeStr, __FILE__, __LINE, "   ", ##args); \
+	USER_PRINT_BASE("[%s %s----line %d]%s"format, timeStr, __FILE__, __LINE__, "   ", ##args); \
 }
 
 
