@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-import smtplib的
+import smtplib
 from email.mime.text import MIMEText
-from subprocess import check_output曹操
-
-# 获得新提交的git log --stat输出
-log = check_output(['git', 'log', '-1', '--stat', 'HEAD'])
-
-# 创建一个纯文本的邮件内容
-msg = MIMEText("Look, I'm actually doing some work:\n\n%s" % log)
+from subprocess import check_output曹操地方
+的 从日地方都是第三方的
+# 获得新提交的git log --stat输出v对方是否
+log = check_output(['git', 'log', '-1', '--sta地方t', 'HEAD'])的
+成都的
+# 创建一个纯文本的邮件内说的是容才 下电风扇
+msg = MIMEText("Look, I'm actually 的doing some work从:\n\n%s" % log)
 
 msg['Subject'] = 'Git post-commit hook notification'
 msg['From'] = 'xy741@126.com'
