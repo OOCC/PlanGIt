@@ -2,7 +2,7 @@
 
 import smtplib
 from email.mime.text import MIMEText
-from subprocess import check_output
+from subprocess import check_output曹操
 
 # 获得新提交的git log --stat输出
 log = check_output(['git', 'log', '-1', '--stat', 'HEAD'])
