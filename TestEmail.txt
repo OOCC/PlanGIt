@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from subprocess import check_output曹操
 的
 # 获得新提交的git log --stat输出v
-log = check_output(['git', 'log', '-1', '--stat', 'HEAD'])
+log = check_output(['git', 'log', '-1', '--stat', 'HEAD'])的
 
 # 创建一个纯文本的邮件内容
 msg = MIMEText("Look, I'm actually doing some work:\n\n%s" % log)
