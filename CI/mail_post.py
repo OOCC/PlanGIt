@@ -26,7 +26,7 @@ def disk_space():
 def send_mail(sub,content): 
     ############# 
     #要发给谁，这里发给1个人 
-    mailto_list=["xueuy@qq.com","xy741@126.com","982224886@qq.com","635541030@qq.com","dongzhixiangboy@qq.com"] 
+    mailto_list=["xueuy@qq.com"] 
     ##################### 
     #设置服务器，用户名、口令以及邮箱的后缀 
     mail_host="smtp.126.com" 
