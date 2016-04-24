@@ -2,7 +2,7 @@
 
 import smtplib
 from email.mime.text import MIMEText
-from subprocess import check_output曹操
+from subprocess import check_output曹操地方
 的 从日
 # 获得新提交的git log --stat输出v
 log = check_output(['git', 'log', '-1', '--sta地方t', 'HEAD'])的
