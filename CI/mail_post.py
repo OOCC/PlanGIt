@@ -9,7 +9,7 @@ import re
 
 def disk_space():
     ## take shell command output
-    ps = os.popen("git log -1")
+    ps = os.popen("git log -2")
 
     uline = []
     i = 0
