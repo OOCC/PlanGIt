@@ -9,12 +9,13 @@ import re
 
 def disk_space():
     ## take shell command output
-    ps = os.popen("git log")
+    ps = os.popen("git log -1")
 
     uline = []
     i = 0
     print(u"one")
     for line in ps:
+        print(u"tsss")
         line = line.strip()
         uline.append(line.decode('utf-8'))
         print uline[i]
