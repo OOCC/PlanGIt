@@ -13,14 +13,15 @@ def disk_space():
 
     uline = []
     i = 0
-	
+    print(u"one")
     for line in ps:
         line = line.strip()
         uline.append(line.decode('utf-8'))
         print uline[i]
+        print(u"two")
         i += 1
     str = '\n'.join(uline)
-
+    print(u"three")
     send_mail(u'xueyu push post',str)
 
 def send_mail(sub,content): 
