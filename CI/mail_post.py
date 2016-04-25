@@ -10,7 +10,7 @@ import re
 def disk_space():
     ## take shell command output
     ps = os.popen("git log -1")
-    print ps
+    print ps.read()
     uline = []
     i = 0
     print(u"one")
