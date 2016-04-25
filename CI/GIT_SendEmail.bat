@@ -1,7 +1,7 @@
 @echo off  
 E:
-ping -n 10 127.0.0.1
-echo git log -1
+ping -n 1 127.0.0.1
+git log -1 > 1.txt
 
 cd E:\GIT\PlanGit\CI
 start python mail_post.py  
