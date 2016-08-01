@@ -8,7 +8,7 @@
 #include "log.h"
 
 
-#define MAXNUM      (10000001)
+#define MAXNUM      (92332112)
 
 int aiNumList[MAXNUM]={0};
 int Get1Count(int *pNumList, int iLstLen, int iMaxNum);
@@ -55,20 +55,28 @@ int Get1Count(int *pNumList, int iLstLen, int iMaxNum)
     iMaxIndex = iLstLen/sizeof(pNumList[0])-1;
        
 
-    fltmp = iMaxNum/100.0;
-    tmp0[1] = (int)fltmp; //how many 100 in iMaxNum
+    //fltmp = iMaxNum/100.0;
+    tmp0[1] = (int)(iMaxNum/100); //how many 100 in iMaxNum
     i1Num = iMaxNum % 10;
     i10Num = (iMaxNum - i1Num)%100;
-    tmp0[0] = i10Num*10+i1Num;
+    tmp0[0] = i10Num+i1Num;
 
 
-	key = (fltmp >= 1? 2 : 1);
+	key = (tmp0[1] >= 1? 2 : 1);
 	tmp1[1] = (key > 1? 100 : 0);
 	tmp1[0] = tmp0[0];
     iTmpCnt[1] = (key > 1? 1: 0);
 
 
-    //LogInfo("key:%d tmp1[0]:%d tmp1[1]:%d", key, tmp1[0], tmp1[1]);
+    while(iMaxNum/10) iMaxNum = iMaxNum/10;
+    if (iMaxNum == 1)
+    {
+        iTmpCnt[0] = tmp0[0];
+        tmp1[0] = 0;
+    }
+
+
+    //LogInfo("iTmpCnt[0]:%d MaxNum:%d key:%d tmp00: %d tmp11:%d tmp1[0]:%d tmp1[1]:%d", iTmpCnt[0], iMaxNum, key, tmp0[0], tmp0[1], tmp1[0], tmp1[1]);
     for (i=0; i < key; i++)
     {
 		for (iIndex=0; iIndex < tmp1[i]; iIndex++)
