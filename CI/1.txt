@@ -1,6 +1,0 @@
-﻿commit d0fd9e6b9bf43f21a92f19ee56d06385cf10c839
-Author: luoyefeisong <xy741@126.com>
-Date:   Sat Aug 6 01:20:27 2016 +0800
-
-    【CI】再试一把，真蛋疼。
-说的
