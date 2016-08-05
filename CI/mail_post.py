@@ -10,25 +10,32 @@ import re
 def disk_space():
     ## take shell command output
     ps = os.popen("git log -1")
-    print ps.read()
     uline = []
-    i = 0
+    global Str
+    global context
+    context = ''
+    Str = ''
     print(u"one")
     for line in ps:
         print(u"tsss")
-        line = line.strip()
         uline.append(line.decode('utf-8'))
-        print uline[i]
+        #.decode('utf-8')
+        print uline
+
+
         print(u"two")
-        i += 1
-    str = '\n'.join(uline)
+
     print(u"three")
-    send_mail(u'xueyu push post',str)
+    for conStr in uline:
+        context = context + conStr
+        print '111 = ' + context
+    print 'conStr = ' + context
+    send_mail(u'xueyu push post', context)
 
 def send_mail(sub,content): 
     ############# 
     #要发给谁，这里发给1个人 
-    mailto_list=["xueuy@qq.com"] 
+    mailto_list=["xueuy@qq.com, 635541030@qq.com, 982224886@qq.com"] 
     ##################### 
     #设置服务器，用户名、口令以及邮箱的后缀 
     mail_host="smtp.126.com" 
@@ -43,7 +50,7 @@ def send_mail(sub,content):
     send_mail("aaa@126.com","sub","content") 
     ''' 
     me=mail_user+"<"+mail_user+"@"+mail_postfix+">" 
-    msg = MIMEText(content,_charset='gbk') 
+    msg = MIMEText(content, _charset='gbk')
     msg['Subject'] = sub 
     msg['From'] = me 
     msg['To'] = ";".join(mailto_list) 
