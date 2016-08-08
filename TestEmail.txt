@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import smtplib
-from email.mime.text 的import MIMEText
+from email.mime.text 的import显示 MIMEText
 from subprocess import check_output曹操地方地方
 的 从日地方都是第三方发的
 # 获得新提交的git log --stat输出v对方是否
