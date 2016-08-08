@@ -28,7 +28,9 @@ def disk_space():
     print(u"three")
     for conStr in uline:
         context = context + conStr
-    send_mail(u'xueyu push post', context)
+        subject = conStr
+
+    send_mail(subject, context)
 
 def send_mail(sub,content): 
     ############# 
