@@ -1,8 +1,8 @@
 #!/usr/bin/python
-
+# -*- coding: utf-8 -*-
 import pygame
-
-
+import math
+from get_pos import *
 
 
 class BoxesGame():
@@ -49,7 +49,42 @@ class BoxesGame():
             if event.type == pygame.QUIT:
                 exit()
 
-            #update the screen
+        #find the line by mouse
+
+        #xpos, ypos, mouse = getPos()
+        # 1
+        mouse = pygame.mouse.get_pos()
+
+        # 2
+        xpos = int(math.ceil((mouse[0] - 32) / 64.0))
+        ypos = int(math.ceil((mouse[1] - 32) / 64.0))
+
+        # 3
+        is_horizontal = abs(mouse[1] - ypos * 64) < abs(mouse[0] - xpos * 64)
+
+        # 4
+        ypos = ypos - 1 if mouse[1] - ypos * 64 < 0 and not is_horizontal else ypos
+        xpos = xpos - 1 if mouse[0] - xpos * 64 < 0 and is_horizontal else xpos
+
+        # 5
+        board = self.boardh if is_horizontal else self.boardv
+        isoutofbounds = False
+
+        # 6
+        try:
+            if not board[ypos][xpos]: self.screen.blit(self.hoverlineh if is_horizontal else self.hoverlinev,
+                                                       [xpos * 64 + 5 if is_horizontal else xpos * 64,
+                                                        ypos * 64 if is_horizontal else ypos * 64 + 5])
+        except:
+            isoutofbounds = True
+            pass
+        if not isoutofbounds:
+            alreadyplaced = board[ypos][xpos]
+        else:
+            alreadyplaced = False
+
+
+        #update the screen
         pygame.display.flip()
 
     def drawBorad(self):
