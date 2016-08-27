@@ -1,8 +1,10 @@
 import pygame
 import math
+from PodSixNet.Connection import ConnectionListener, connection
+from time import sleep
 
+class BoxesGame(ConnectionListener):
 
-class BoxesGame():
 	def drawHUD(self):
 		#draw the background for the bottom:
 		self.screen.blit(self.score_panel, [0, 389])
@@ -12,7 +14,7 @@ class BoxesGame():
 		label = myfont.render("Your Turn:", 1, (255,255,255))
 		#draw surface
 		self.screen.blit(label, (10, 400))
-		self.screen.blit(self.greenindicator, (130, 395))
+		self.screen.blit(self.greenindicator if self.turn else self.redindicator, (130, 395))
 		#same thing here
 		myfont64 = pygame.font.SysFont(None, 64)
 		myfont20 = pygame.font.SysFont(None, 20)
@@ -25,7 +27,7 @@ class BoxesGame():
 		self.screen.blit(scoreme, (10, 435))
 		self.screen.blit(scoretextother, (280, 425))
 		self.screen.blit(scoreother, (340, 435))
-		
+
 	def initGraphics(self):
 		self.normallinev=pygame.image.load("./image/normalline.png")
 		self.normallineh=pygame.transform.rotate(pygame.image.load("./image/normalline.png"), -90)
@@ -41,7 +43,7 @@ class BoxesGame():
 		self.winningscreen=pygame.image.load("./image/youwin.png")
 		self.gameover=pygame.image.load("./image/gameover.png")
 		self.score_panel=pygame.image.load("./image/score_panel.png")
-		
+
 	def __init__(self):
 		pass
 		#1
@@ -65,7 +67,26 @@ class BoxesGame():
 		self.didiwin=False
 		self.owner = [[0 for x in range(6)] for y in range(6)]
 		#self.finished()
+		self.Connect()
+		self.gameid = None
+		self.num = None
+		self.running=False
+		while not self.running:
+			self.Pump()
+			connection.Pump()
+			sleep(0.01)
+		#determine attributes from player #
+		if self.num==0:
+			self.turn=True
+			self.marker = self.greenplayer
+			self.othermarker = self.blueplayer
+		else:
+			self.turn=False
+			self.marker=self.blueplayer
+			self.othermarker = self.greenplayer
+		self.justplaced=10
 		
+
 	def drawBoard(self):
 		for x in range(6):
 			for y in range(7):
@@ -73,7 +94,7 @@ class BoxesGame():
 					self.screen.blit(self.normallineh, [(x)*64+5, (y)*64])
 				else:
 					self.screen.blit(self.bar_doneh, [(x)*64+5, (y)*64])
-				self.boardh[5][3]=True
+				#self.boardh[5][3]=True
 		for x in range(7):
 			for y in range(6):
 				if not self.boardv[y][x]:
@@ -84,8 +105,14 @@ class BoxesGame():
 		for x in range(7):
 			for y in range(7):
 				self.screen.blit(self.separators, [x*64, y*64])
-		
+
 	def update(self):
+		if self.me+self.otherplayer==36:
+			self.didiwin=True if self.me>self.otherplayer else False
+			return 1
+		self.justplaced-=1
+		connection.Pump()
+		self.Pump()
 		#sleep to make the game 60 fps
 		self.clock.tick(60)
 		#clear the screen
@@ -93,6 +120,7 @@ class BoxesGame():
 		#draw the board
 		self.drawBoard()
 		self.drawHUD()
+		self.drawOwnermap()
 		for event in pygame.event.get():
 			#quit if the quit button was pressed
 			if event.type == pygame.QUIT:
@@ -121,12 +149,18 @@ class BoxesGame():
 			alreadyplaced=board[ypos][xpos]
 		else:
 			alreadyplaced=False
-		if pygame.mouse.get_pressed()[0] and not alreadyplaced and not isoutofbounds:
+		if pygame.mouse.get_pressed()[0] and not alreadyplaced and not isoutofbounds and self.turn==True and self.justplaced<=0:
+			self.justplaced=10
 			if is_horizontal:
 				self.boardh[ypos][xpos]=True
+				self.Send({"action": "place", "x":xpos, "y":ypos, "is_horizontal": is_horizontal, "gameid": self.gameid, "num": self.num})
 			else:
 				self.boardv[ypos][xpos]=True
+				self.Send({"action": "place", "x":xpos, "y":ypos, "is_horizontal": is_horizontal, "gameid": self.gameid, "num": self.num})
 		pygame.display.flip()
+		
+		
+				
 	def drawOwnermap(self):
 		for x in range(6):
 			for y in range(6):
@@ -135,6 +169,7 @@ class BoxesGame():
 						self.screen.blit(self.marker, (x*64+5, y*64+5))
 					if self.owner[x][y]=="lose":
 						self.screen.blit(self.othermarker, (x*64+5, y*64+5))
+
 	def finished(self):
 		self.screen.blit(self.gameover if not self.didiwin else self.winningscreen, (0,0))
 		while 1:
@@ -142,7 +177,46 @@ class BoxesGame():
 				if event.type == pygame.QUIT:
 					exit()
 			pygame.display.flip()
-		
+			
+	def Network_startgame(self, data):
+		self.running=True
+		self.num=data["player"]
+		self.gameid=data["gameid"]
+	def Network_place(self, data):
+		#get attributes
+		x = data["x"]
+		y = data["y"]
+		hv = data["is_horizontal"]
+		#horizontal or vertical
+		if hv:
+			self.boardh[y][x]=True
+		else:
+			self.boardv[y][x]=True
+	def Network_yourturn(self, data):
+		#torf = short for true or false
+		self.turn = data["torf"]
+	def Network_win(self, data):
+		self.owner[data["x"]][data["y"]]="win"
+		self.boardh[data["y"]][data["x"]]=True
+		self.boardv[data["y"]][data["x"]]=True
+		self.boardh[data["y"]+1][data["x"]]=True
+		self.boardv[data["y"]][data["x"]+1]=True
+		#add one point to my score
+		self.me+=1
+	def Network_lose(self, data):
+		self.owner[data["x"]][data["y"]]="lose"
+		self.boardh[data["y"]][data["x"]]=True
+		self.boardv[data["y"]][data["x"]]=True
+		self.boardh[data["y"]+1][data["x"]]=True
+		self.boardv[data["y"]][data["x"]+1]=True
+		#add one to other players score
+		self.otherplayer+=1
+	def Network_close(self, data):
+		exit()
+
+
 bg=BoxesGame() #__init__ is called right here
 while 1:
-	bg.update()
+	if bg.update()==1:
+		break
+bg.finished()
