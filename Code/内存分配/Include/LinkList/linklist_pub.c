@@ -37,7 +37,7 @@ SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
         return NULL;
     }
     
-    pTmpNode = &(pList.stHead); 
+    pTmpNode = &(pList->stHead); 
     
     /* 循环找，因为里面会预取下一个，下一个如果为空就不用找了 */
     while (NULL != pTmpNode->pNext)
@@ -77,10 +77,19 @@ void InsertNode(SLL *pList, SLL_NODE *pNode)
     
     pList->ulNodeNum++;
     
-    pList->pstTail->pNext = pNode;  /* 先将pNode插入到尾节点之后 */
-    pNode->pNext = NULL;            /* 再将pNode之后置为NULL */
-    pList->pstTail = pNode;         /* 最后把pstTail的值保存为pNode */
+	/* ��һ���ڵ� */
+	if (pList->stHead.pNext == NULL)
+	{
+		pList->stHead.pNext = pNode;
+		pList->pstTail = pNode;
+		
+		pNode->pNext = NULL;
+	}
 
+    pList->pstTail->pNext = pNode;  	/* �Ƚ�pNode���뵽β�ڵ�֮�� */
+    pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
+    pList->pstTail = pNode;      		/* ����pstTail��ֵ����ΪpNode */
+	
     return;
 }
 

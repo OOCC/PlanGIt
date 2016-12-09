@@ -38,6 +38,8 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode);
 
 
 #define SLL_INIT(pList) {\
+	((SLL *)pList)->stHead.pNext = ((SLL *)pList)->pstTail;\
+	((SLL *)pList)->stHead.ulData =0;\
     ((SLL *)pList)->pstTail = NULL;\
     ((SLL *)pList)->ulNodeNum = 0;\
 }
