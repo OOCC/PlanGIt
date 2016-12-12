@@ -1,0 +1,8 @@
+﻿  MemoryAllocaion.c
+src\MemoryAllocaion.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+src\MemoryAllocaion.c(15): fatal error C1083: 无法打开包括文件: “MemoryAllcation.h”: No such file or directory
+  linklist_pub.c
+include\linklist\linklist_pub.c : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+e:\git\plangit\code\内存分配\include\linklist\linklist_pub.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+e:\git\plangit\code\内存分配\include\linklist\linklist_pub.h(15): fatal error C1083: 无法打开包括文件: “public_def.h”: No such file or directory
+  正在生成代码...
