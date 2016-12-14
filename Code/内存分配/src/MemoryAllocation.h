@@ -8,7 +8,7 @@
        内容 :
 ****************************************************************************/
 /* memory total size */
-#define MEM_SIZE   10000
+#define MEM_SIZE   10240
 
 /* means 2^n */
 #define LL_ZERO    1
@@ -17,3 +17,6 @@
 #define LL_THREE   8
 #define LL_FOUR    16
 #define LL_FIVE    32
+
+
+#define MEM_MAX_ALLOCA 128
