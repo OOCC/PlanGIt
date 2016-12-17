@@ -25,6 +25,44 @@ CHAR g_cMemory[MEM_SIZE] = 0;
 SLL g_pLLMemList[MEM_BLOCK_NUM] = NULL;
 
 
+/****************************************************************************
+   function name :      MEM_matchBlockLevelByListIndex
+           input :           
+          output :		
+    return value :      输出匹配的level
+         history :      
+               1 :      2016-12-17 created by xueyu
+                        根据数据块级别匹配链表索引
+                        
+****************************************************************************/
+ULONG  MEM_matchBlockLevelByListIndex(ULONG ulListIndex)
+{
+    switch (ulListIndex)
+    {
+        case 0:
+            return LL_ZERO;
+
+        case 1:
+            return LL_ONE;
+
+        case 2:
+            return LL_TWO;
+
+        case 3:
+            return LL_THREE;
+
+        case 4:
+            return LL_FOUR;
+
+        case 5:
+            return LL_FIVE;
+
+        default:
+            return NULL_ULONG; 
+    }
+}
+
+
 
 /****************************************************************************
    function name :      MEM_matchListIndexbyLevel
@@ -65,6 +103,8 @@ ULONG  MEM_matchListIndexbyLevel(ULONG ulBlockLevel)
 
 
 
+
+
 /****************************************************************************
    function name :      MEM_ALLOCA_LLNODE_INIT
            input :           
@@ -88,7 +128,7 @@ ULONG MEM_ALLOCA_LLNODE_INIT(ulMemIndex, SLL *pList, ULONG ulListIndex, ULONG ul
     for (index = 0; index < ulListNum; index++)
     {
         pNode = &g_cMemory[ulMemIndex];
-        SLL_ADD(pList, pNode, false) 
+        SLL_ADD(pList, pNode, true) 
 
         ulMemIndex += ulListIndex;
     }
@@ -280,21 +320,71 @@ ULONG MEM_findBuddyForBlock(ULONG ulBloackLevel, ULONG ulBlockIndex)
 /****************************************************************************
    function name :      MEM_findCanAllocListIndex
            input :      ulNeedListIndex    实际需要的内存链表索引
-          output :      ulCanAllocListIndex   能分配内存的链表索引		
+          output :      pulCanAllocListIndex   能分配内存的链表索引		
     return value :
          history :      
                1 :      2016-12-17 created by xueyu
-                        找到能分配的链表索引
+                        找到能分配的链表索引和节点
                         
 ****************************************************************************/
-ULONG MEM_findCanAllocListIndex(ULONG ulNeedListIndex)
+SLL_NODE  *MEM_findCanAllocListIndex(ULONG ulNeedListIndex, ULONG *pulCanAllocListIndex)
 {
+    SLL_NODE *pNodeTmp = NULL;
+
     for (ulNeedListIndex; ulNeedListIndex <= 5; ulNeedListIndex++)
     {
-        if (g_pLLMemList[ulNeedListIndex])
+        pNodeTmp = FindFreeNodebyListIndex(ulNeedListIndex);
+        if (NULL_ULONG != pNodeTmp)
+        {
+            *pulCanAllocListIndex = ulNeedListIndex;
+            return pNodeTmp;
+        }
+
     }
+
+    /* 一开始就应该限制住，这里不应该会出现这种情况 */
+    *pulCanAllocListIndex = NULL_ULONG;
+    return NULL;
 }
 
+
+/****************************************************************************
+   function name :      MEM_sepNodeFreeAndUsed
+           input :      ulListIndex
+                        pNode
+                        
+          output :		ppNodeSmallFree  返回空闲的小节点指针 
+    return value :
+         history :      
+               1 :      2016-12-17 created by xueyu
+                        拆开一个NODE，使其成为两个小NODE，并且左边的为空闲，右边的为使用
+                        
+****************************************************************************/
+ULONG MEM_sepNodeFreeAndUsed(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree)
+{
+    ULONG ulSmallListIndex = ulListIndex - 1;
+    ULONG ulBlockIndex = pNode - &g_cMemory[0];
+    ULONG ulBlockLevel = NULL_ULONG;
+
+
+    ulBlockLevel = MEM_matchBlockLevelByListIndex(ListIndex)
+    if (ulBloackLevel == NULL_ULONG)
+    {
+        return VOS_ERR;
+    }
+
+    /* 先删除大的节点 */
+    SLL_DEL(&g_pLLMemList[ulListIndex], pNode)
+
+    /* 再添加小的节点 */
+    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_cMemory[ulBlockIndex], true)
+    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_cMemory[ulBlockIndex - ulBloackLevel], false)
+
+    *ppNodeSmallFree = &g_cMemory[ulBlockIndex];
+
+    return VOS_OK;
+
+}
 
 
 
@@ -312,13 +402,58 @@ ULONG MEM_findCanAllocListIndex(ULONG ulNeedListIndex)
 ****************************************************************************/
 ULONG MEM_allocBlock(ULONG ulNeedBlockLevel)
 {
+    SLL_NODE *pNode = NULL;
+    SLL_NODE *pNodeTmp = NULL;
+    ULONG ulCanAllocListIndex = NULL_ULONG;
+    ULONG ulCanAllocListIndexTmp = NULL_ULONG;    
     ULONG ulListIndex = NULL_ULONG;
+    SLL_NODE *pNodeSmall = NULL;
+
+    /* 匹配要申请内存size对应的ListIndex */
     ulListIndex = MEM_matchListIndexbyLevel(ulNeedBlockLevel);
     if (NULL_ULONG == ulListIndex)
     {
-        return VOS_FALSE;
+        return VOS_ERR;
+    }
+    
+    /* 找到能够申请内存的节点和ListIndex */
+    pNode = MEM_findCanAllocListIndex(ulListIndex, &ulCanAllocListIndex);
+    if (NULL == pNode && NULL_ULONG == ulCanAllocListIndex)
+    {
+        return VOS_ERR;
     }
 
+    if (ListIndex == ulCanAllocListIndex)
+    {
+        pNode->bFree = false;
+    }
+    else
+    {
+        ulCanAllocListIndexTmp = ulCanAllocListIndex;
+
+        pNodeTmp = pNode;
+
+        while (ulCanAllocListIndexTmp != ListIndex)
+        {
+            if (NULL != pNodeSmall)
+            {
+                pNodeTmp = pNodeSmall;
+            }
+
+            (VOID)MEM_sepNodeFreeAndUsed(ulCanAllocListIndexTmp, pNodeTmp, &pNodeSmall);
+
+            if (ulCanAllocListIndex != 0)
+            {
+                ulCanAllocListIndex--;
+            }
+            else
+            {
+                return VOS_ERR;
+            }
+        }
+    }
+
+    return VOS_OK;
 
 }
 
@@ -357,13 +492,11 @@ VOID *malloc_x(ULONG ulSize)
     /* size < LL_FIVE 时，分配的时候不需要考虑合并,但是找不到匹配的就要拆开大的 */
     MEM_findMatchAlaBlock(ulSize, LL_FIVE, &ulAlaBlockSize);
 
-    
-    
-
-
-
-    
-
+    /* 分配内存 */
+    if (VOS_ERR == MEM_allocBlock(ulAlaBlockSize) )
+    {
+        return;
+    }
 }
 
 
