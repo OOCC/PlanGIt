@@ -20,3 +20,5 @@
 
 
 #define MEM_MAX_ALLOCA 128
+
+#define MEM_BLOCK_NUM  6

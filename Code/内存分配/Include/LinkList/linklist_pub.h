@@ -17,7 +17,9 @@
     
 typedef struct node {
     struct node  *pNext;
-    ULONG    ulData;          /* 数据头 */
+    ULONG    ulBLockIndex;          /* 内存索引 */
+    bool     bFree；            /* 此数据块是否空闲 */
+//CHAR *pMem;           /* 当前节点所在的内存地址 */
 }SLL_NODE;
 
 
@@ -30,9 +32,9 @@ typedef struct {
 
 #if DESC(" function")
 SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode);
-void InsertNode(SLL *pList, SLL_NODE *pNode);
+void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree);
 void DeleteNode(SLL *pList, SLL_NODE *pNode);
-
+SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBLockIndex);
 #endif
 
 
@@ -49,8 +51,8 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode);
 }*/
 #define SLL_COUNT(pList) ((SLL *)pList)->ulNodeNum
 
-#define SLL_ADD(pList, pNode) {\
-    InsertNode(pList, pNode);\
+#define SLL_ADD(pList, pNode, bFree) {\
+    InsertNode(pList, pNode, bFree);\
 }
 
 #define SLL_DEL(pList, pNode) {\
@@ -60,15 +62,12 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode);
 
 #define SLL_NODE_INIT(pNode) {\
     ((SLL_NODE *)pNode)->pNext = NULL;\
-    ((SLL_NODE *)pNode)->ulData = 0;\
+    ((SLL_NODE *)pNode)->ulBLockIndex = NULL_ULONG;\
+    ((SLL_NODE *)pNode)->bFree = false;\
 } 
 
 /*#define SLL_NODE_GET_DATA(pNode) ({\
     ((SLL_NODE *)pNode)->ulData;\
 })*/
-#define SLL_NODE_GET_DATA(pNode) ((SLL_NODE *)pNode)->ulData 
 
-#define SLL_NODE_SET_DATA(pNode, pData) {\
-    ((SLL_NODE *)pNode)->ulData = (ULONG)pData;\
-}
 

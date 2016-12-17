@@ -26,7 +26,6 @@
                1 :      2016-12-08 created by xueyu
                         遍历链表，找到指定节点的上一个节点地址（为了拿来删节点）                        
 ****************************************************************************/
-
 SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
 {
     SLL_NODE *pTmpNode = NULL;
@@ -54,6 +53,67 @@ SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
 }
 
 
+
+/****************************************************************************
+   function name :      FindFreeNodebyListIndex
+           input :                                   
+          output :		
+    return value :
+         history :      
+               1 :      2016-12-17 created by xueyu
+                        遍历链表，通过链表index找到空闲节点
+*****************************************************************************/
+SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
+{
+    SLL_NODE *pNodeTmp = NULL;
+    
+    pNodeTmp = (g_pLLMemList[ulListIndex].stHead)->pNext;
+
+    while (NULL != pNodeTmp)
+    {
+        if (true == pNodeTmp->bFree)
+        {
+            return pNodeTmp;
+        }
+    }
+
+    return NULL;
+}
+
+
+/****************************************************************************
+   function name :      FindNodeByList
+           input :      pList
+                        pNode     
+          output :		pLast
+    return value :
+         history :      
+               1 :      2016-12-08 created by xueyu
+                        遍历链表，通过index找到对应level的节点                        
+****************************************************************************/
+SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex)
+{
+    SLL *pLL = NULL;
+    SLL_NODE *pTmpNode = NULL;
+
+    pLL = &g_pLLMemList[ulBlockLevel];
+    pTmpNode = &pLL->stHead;
+
+    while (NULL != pTmpNode)
+    {
+        if (pTmpNode->ulBlockIndex == ulBlockIndex)
+        {
+            return pTmpNode;
+        }
+
+        pTmpNode = pTmpNode->pNext;
+    }
+
+    return NULL;
+}
+
+
+
 /****************************************************************************
    function name :      InsertNode
            input :      pNode     
@@ -67,7 +127,7 @@ SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
                         修改为单向链表
 ****************************************************************************/
 
-void InsertNode(SLL *pList, SLL_NODE *pNode)
+void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree)
 {
     if (NULL == pList || NULL == pNode)
     {
@@ -77,19 +137,26 @@ void InsertNode(SLL *pList, SLL_NODE *pNode)
     
     pList->ulNodeNum++;
     
-	/* ��һ���ڵ� */
+	/* ��һ���ڵ� */
 	if (pList->stHead.pNext == NULL)
 	{
 		pList->stHead.pNext = pNode;
 		pList->pstTail = pNode;
-		
-		pNode->pNext = NULL;
+    	pNode->pNext = NULL;
+
+        /* 填数据 */
+        pNode->ulBlockIndex = pNode - &g_cMemory[0];
+        pNode->bFree = bFree;
 	}
 
-    pList->pstTail->pNext = pNode;  	/* �Ƚ�pNode���뵽β�ڵ�֮�� */
-    pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
-    pList->pstTail = pNode;      		/* ����pstTail��ֵ����ΪpNode */
-	
+    pList->pstTail->pNext = pNode;  	/* �Ƚ�pNode���뵽β�ڵ�֮�� */
+    pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
+    pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
+
+    /* 填数据 */
+    pNode->ulBlockIndex = pNode - &g_cMemory[0];
+    pNode->bFree = bFree;
+
     return;
 }
 
