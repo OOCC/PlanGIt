@@ -27,3 +27,12 @@
 
 extern SLL_NODE  g_Memory[MEM_SIZE];
 extern SLL g_pLLMemList[MEM_BLOCK_NUM];
+
+VOID MEM_ALLOCA_INIT(VOID);
+
+
+ void *malloc_x(ULONG ulSize);
+   ULONG free_x(VOID *p);
+
+
+

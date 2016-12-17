@@ -75,6 +75,7 @@ SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
         {
             return pNodeTmp;
         }
+        pNodeTmp = pNodeTmp->pNext;
     }
 
     return NULL;
@@ -147,8 +148,16 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree)
     	pNode->pNext = NULL;
 
         /* 填数据 */
+		for (ulListIndex = 0; ulListIndex <= 5; ulListIndex++)
+		{
+			if (pList == &g_pLLMemList[ulListIndex])
+			{
+				pNode->ulListIndex = ulListIndex;
+			}
+		}
         pNode->ulBlockIndex = pNode - &g_Memory[0];
         pNode->bFree = bFree;
+		return;
 	}
 
     pList->pstTail->pNext = pNode;  	/* �Ƚ�pNode���뵽β�ڵ�֮�� */

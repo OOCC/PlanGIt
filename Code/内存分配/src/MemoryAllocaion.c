@@ -237,6 +237,11 @@ VOID MEM_ALLOCA_INIT(VOID)
                 return; 
         }
 
+		if (ulMemIndex == 10240)
+		{
+			break;
+		}
+
         /* 从2^5 开始逐步挂载链表，直到全部找完 */
 		ulTmpSize = ulTmpSize / 2;
     }
@@ -378,7 +383,7 @@ ULONG MEM_sepNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree
 
     /* 再添加小的节点 */
     SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex], true)
-    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex - ulBlockLevel], false)
+    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex + ulBlockLevel], false)
 
     *ppNodeSmallFree = &g_Memory[ulBlockIndex];
 
@@ -432,7 +437,7 @@ ULONG MEM_combineNode(ULONG ulListIndex, SLL_NODE *pBuddyNode, SLL_NODE *pNode, 
                         直到拆分出合适的内存块
                         
 ****************************************************************************/
-SLL_NODE  *MEM_allocBlock(ULONG ulNeedBlockLevel)
+SLL_NODE *MEM_allocBlock(ULONG ulNeedBlockLevel)
 {
     SLL_NODE *pNode = NULL;
     SLL_NODE *pNodeTmp = NULL;
@@ -458,6 +463,7 @@ SLL_NODE  *MEM_allocBlock(ULONG ulNeedBlockLevel)
     if (ulListIndex == ulCanAllocListIndex)
     {
         pNode->bFree = false;
+        return pNode;
     }
     else
     {
@@ -474,9 +480,9 @@ SLL_NODE  *MEM_allocBlock(ULONG ulNeedBlockLevel)
 
             (VOID)MEM_sepNode(ulCanAllocListIndexTmp, pNodeTmp, &pNodeSmall);
 
-            if (ulCanAllocListIndex != 0)
+            if (ulCanAllocListIndexTmp != 0)
             {
-                ulCanAllocListIndex--;
+				ulCanAllocListIndexTmp--;
             }
             else
             {
@@ -506,6 +512,7 @@ void *malloc_x(ULONG ulSize)
 {
     ULONG ulSizeTmp = NULL_ULONG;
     ULONG ulAlaBlockSize = NULL_ULONG;  /* 分配的内存块大小 */ 
+    SLL_NODE *pAlaNode = NULL;
 
     if (0 == ulSize || ulSize > MEM_MAX_ALLOCA  )
     {
@@ -526,12 +533,12 @@ void *malloc_x(ULONG ulSize)
     MEM_findMatchAlaBlock(ulSize, LL_FIVE, &ulAlaBlockSize);
 
     /* 分配内存 */
-    if (VOS_OK != MEM_allocBlock(ulAlaBlockSize) )
+    if ( !(pAlaNode = MEM_allocBlock(ulAlaBlockSize) ))
     {
         return NULL;
     }
 
-    return VOS_OK;
+    return pAlaNode;
 }
 
 
