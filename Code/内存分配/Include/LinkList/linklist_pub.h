@@ -12,14 +12,16 @@
 //#include "/TEST_LinkList/"
 
 #include <stdio.h>
-#include "public_def.h"
-#include "type_def.h"
+#include <stdbool.h>
+
+#include "../public_headfile/public_def.h"
+#include "../public_headfile/type_def.h"
     
 typedef struct node {
     struct node  *pNext;
     ULONG    ulListIndex;       /* 节点所在的链表索引 */
-    ULONG    ulBLockIndex;          /* 内存索引 */
-    bool     bFree;            /* 此数据块是否空闲 */
+    ULONG    ulBlockIndex;          /* 内存索引 */
+    ULONG     bFree;            /* 此数据块是否空闲 */
 //CHAR *pMem;           /* 当前节点所在的内存地址 */
 }SLL_NODE;
 
@@ -33,16 +35,17 @@ typedef struct {
 
 #if DESC(" function")
 SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode);
-void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree);
+void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree);
 void DeleteNode(SLL *pList, SLL_NODE *pNode);
-SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBLockIndex);
+SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex);
+SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex);
+
 #endif
 
 
 
 #define SLL_INIT(pList) {\
 	((SLL *)pList)->stHead.pNext = ((SLL *)pList)->pstTail;\
-	((SLL *)pList)->stHead.ulData =0;\
     ((SLL *)pList)->pstTail = NULL;\
     ((SLL *)pList)->ulNodeNum = 0;\
 }
@@ -63,7 +66,7 @@ SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBLockIndex);
 
 #define SLL_NODE_INIT(pNode) {\
     ((SLL_NODE *)pNode)->pNext = NULL;\
-    ((SLL_NODE *)pNode)->ulBLockIndex = NULL_ULONG;\
+    ((SLL_NODE *)pNode)->ulBlockIndex = NULL_ULONG;\
     ((SLL_NODE *)pNode)->bFree = false;\
 } 
 

@@ -8,6 +8,8 @@
        内容 :
 ****************************************************************************/
 /* memory total size */
+#include "../include/linklist/linklist_pub.h"
+
 #define MEM_SIZE   10240
 
 /* means 2^n */
@@ -22,3 +24,6 @@
 #define MEM_MAX_ALLOCA 128
 
 #define MEM_BLOCK_NUM  6
+
+extern SLL_NODE  g_Memory[MEM_SIZE];
+extern SLL g_pLLMemList[MEM_BLOCK_NUM];

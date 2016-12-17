@@ -8,10 +8,11 @@
        �޸����� :
 ****************************************************************************/
 #include <stdio.h>
-#include "linklist_pub.h"
-#include "public_def.h"
-#include "type_def.h"
+#include <stdbool.h>
 
+#include "../public_headfile/public_def.h"
+#include "../public_headfile/type_def.h"
+#include "../../src/MemoryAllocation.h"
 
 
 
@@ -29,7 +30,6 @@
 SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
 {
     SLL_NODE *pTmpNode = NULL;
-    SLL_NODE *pLast = NULL;
     
     if (NULL == pList || NULL == pNode)
     {
@@ -67,7 +67,7 @@ SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
 {
     SLL_NODE *pNodeTmp = NULL;
     
-    pNodeTmp = (g_pLLMemList[ulListIndex].stHead)->pNext;
+    pNodeTmp = g_pLLMemList[ulListIndex].stHead.pNext;
 
     while (NULL != pNodeTmp)
     {
@@ -127,7 +127,7 @@ SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex)
                         修改为单向链表
 ****************************************************************************/
 
-void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree)
+void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree)
 {
     ULONG ulListIndex = NULL_ULONG;
 
@@ -147,7 +147,7 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree)
     	pNode->pNext = NULL;
 
         /* 填数据 */
-        pNode->ulBlockIndex = pNode - &g_cMemory[0];
+        pNode->ulBlockIndex = pNode - &g_Memory[0];
         pNode->bFree = bFree;
 	}
 
@@ -164,7 +164,7 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree)
         }
     }           
     
-    pNode->ulBlockIndex = pNode - &g_cMemory[0];
+    pNode->ulBlockIndex = pNode - &g_Memory[0];
     pNode->bFree = bFree;
 
     return;
@@ -193,7 +193,7 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode)
         return;
     }
     
-    pLast == FindNodeByList(pList, pNode);
+    pLast = FindNodeByList(pList, pNode);
     if (NULL == pLast)
     {
         return;
