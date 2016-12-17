@@ -115,9 +115,10 @@ ULONG  MEM_matchListIndexbyLevel(ULONG ulBlockLevel)
                         初始化内存数据，挂载到链表中
                         
 ****************************************************************************/
-ULONG MEM_ALLOCA_LLNODE_INIT(ulMemIndex, SLL *pList, ULONG ulListIndex, ULONG ulListNum )
+ULONG MEM_ALLOCA_LLNODE_INIT(ULONG ulMemIndex, SLL *pList, ULONG ulListIndex, ULONG ulListNum )
 {
     ULONG index = 0;
+    SLL_NODE *pNode = NULL;
 
     /* 大于MEM_SIZE就是扯淡，最大值应该算一下的，先这样吧，后面再搞 */
     if (0 == ulListNum || ulListNum > MEM_SIZE )
@@ -263,7 +264,7 @@ VOID MEM_findMatchAlaBlock(ULONG ulSize, ULONG ulFindSize, ULONG *pulMatchSize)
     }
     else
     {
-        findMatchAlaBlock(ulSize, ulFindSize / 2, pulMatchSize);
+        MEM_findMatchAlaBlock(ulSize, ulFindSize / 2, pulMatchSize);
     }
  
 }
@@ -287,7 +288,7 @@ ULONG MEM_findBuddyForBlock(ULONG ulBloackLevel, ULONG ulBlockIndex)
     SLL_NODE *pNode = NULL;
     
     /* 先除以对应的数据块level，用于后面判断 */
-    ulTmp = ulBloackLevel / ulBloackLevel;
+    ulTmp = ulBlockIndex / ulBloackLevel;
 
     /* 根据奇偶判断伙伴是在左边还是右边，偶数伙伴在右边。  */
     if (ulTmp % 2 = 0)
@@ -349,7 +350,7 @@ SLL_NODE  *MEM_findCanAllocListIndex(ULONG ulNeedListIndex, ULONG *pulCanAllocLi
 
 
 /****************************************************************************
-   function name :      MEM_sepNodeFreeAndUsed
+   function name :      MEM_sepNode
            input :      ulListIndex
                         pNode
                         
@@ -360,7 +361,7 @@ SLL_NODE  *MEM_findCanAllocListIndex(ULONG ulNeedListIndex, ULONG *pulCanAllocLi
                         拆开一个NODE，使其成为两个小NODE，并且左边的为空闲，右边的为使用
                         
 ****************************************************************************/
-ULONG MEM_sepNodeFreeAndUsed(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree)
+ULONG MEM_sepNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree)
 {
     ULONG ulSmallListIndex = ulListIndex - 1;
     ULONG ulBlockIndex = pNode - &g_cMemory[0];
@@ -368,7 +369,7 @@ ULONG MEM_sepNodeFreeAndUsed(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNo
 
 
     ulBlockLevel = MEM_matchBlockLevelByListIndex(ListIndex)
-    if (ulBloackLevel == NULL_ULONG)
+    if (ulBlockLevel == NULL_ULONG)
     {
         return VOS_ERR;
     }
@@ -378,7 +379,7 @@ ULONG MEM_sepNodeFreeAndUsed(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNo
 
     /* 再添加小的节点 */
     SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_cMemory[ulBlockIndex], true)
-    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_cMemory[ulBlockIndex - ulBloackLevel], false)
+    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_cMemory[ulBlockIndex - ulBlockLevel], false)
 
     *ppNodeSmallFree = &g_cMemory[ulBlockIndex];
 
@@ -386,6 +387,38 @@ ULONG MEM_sepNodeFreeAndUsed(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNo
 
 }
 
+
+ULONG MEM_combineNode(ULONG ulListIndex, SLL_NODE *pBuddyNode, SLL_NODE *pNode, SLL_NODE **ppCombineNode)
+{
+    SLL_NODE *pCombineNode = NULL; 
+    ULONG ulCombineListIndex = ++ulListIndex;
+
+    if (NULL == pBuddyNode || NULL == pNode)
+    {
+        return VOS_ERR;
+    }
+
+    if (pBuddyNode > pNode)
+    {
+        pCombineNode = pBuddyNode;
+    }
+    else
+    {
+        pCombineNode = pNode;
+    }
+
+
+    SLL_DEL(&g_pLLMemList[ulListIndex], pNode)
+    SLL_DEL(&g_pLLMemList[ulListIndex], pBuddyNode)
+
+    SLL_ADD(&g_pLLMemList[ulCombineListIndex], pCombineNode, true)
+
+    *ppCombineNode = pCombineNode;
+
+    return VOS_OK;
+    
+    
+}
 
 
 /****************************************************************************
@@ -423,7 +456,7 @@ ULONG MEM_allocBlock(ULONG ulNeedBlockLevel)
         return VOS_ERR;
     }
 
-    if (ListIndex == ulCanAllocListIndex)
+    if (ulListIndex == ulCanAllocListIndex)
     {
         pNode->bFree = false;
     }
@@ -433,14 +466,14 @@ ULONG MEM_allocBlock(ULONG ulNeedBlockLevel)
 
         pNodeTmp = pNode;
 
-        while (ulCanAllocListIndexTmp != ListIndex)
+        while (ulCanAllocListIndexTmp != ulListIndex)
         {
             if (NULL != pNodeSmall)
             {
                 pNodeTmp = pNodeSmall;
             }
 
-            (VOID)MEM_sepNodeFreeAndUsed(ulCanAllocListIndexTmp, pNodeTmp, &pNodeSmall);
+            (VOID)MEM_sepNode(ulCanAllocListIndexTmp, pNodeTmp, &pNodeSmall);
 
             if (ulCanAllocListIndex != 0)
             {
@@ -453,7 +486,8 @@ ULONG MEM_allocBlock(ULONG ulNeedBlockLevel)
         }
     }
 
-    return VOS_OK;
+    
+    return pNodeSmall;
 
 }
 
@@ -469,14 +503,14 @@ ULONG MEM_allocBlock(ULONG ulNeedBlockLevel)
                         找到大小最接近的数据块，超过最大则先分最大再往小的分
                         
 ****************************************************************************/
-VOID *malloc_x(ULONG ulSize)
+void *malloc_x(ULONG ulSize)
 {
-    ULONG ulSizeTmp = 0；
-    ULONG ulAlaBlockSize;  /* 分配的内存块大小 */ 
+    ULONG ulSizeTmp = NULL_ULONG;
+    ULONG ulAlaBlockSize = NULL_ULONG;  /* 分配的内存块大小 */ 
 
     if (0 == ulSize || ulSize > MEM_MAX_ALLOCA  )
     {
-        return;
+        return NULL;
     }
 
     ulSizeTmp  = ulSize;
@@ -486,18 +520,78 @@ VOID *malloc_x(ULONG ulSize)
     while (ulSizeTmp > LL_FIVE)
     {
         /* 这种情况后面再完善吧 */
-        return;
+        return NULL;
     }
 
     /* size < LL_FIVE 时，分配的时候不需要考虑合并,但是找不到匹配的就要拆开大的 */
     MEM_findMatchAlaBlock(ulSize, LL_FIVE, &ulAlaBlockSize);
 
     /* 分配内存 */
-    if (VOS_ERR == MEM_allocBlock(ulAlaBlockSize) )
+    if (VOS_OK != MEM_allocBlock(ulAlaBlockSize) )
     {
-        return;
+        return NULL;
     }
+
+    return VOS_OK;
 }
 
+
+/****************************************************************************
+   function name :      free_x
+           input :           
+          output :   
+    return value :
+         history :      
+               1 :      2016-12-17 created by xueyu
+                        释放内存
+                        
+****************************************************************************/
+ULONG free_x(VOID *p)
+{
+    SLL_NODE *pNode = NULL;
+    SLL_NODE *pBuddyNode = NULL;
+    SLL_NODE *pCombineNode = NULL;
+    ULONG ulBloackLevel = NULL_ULONG;
+    
+
+    if (NULL == p)
+    {
+        return VOS_ERR;
+    }
+
+    pNode = (SLL_NODE *)p;
+    if (pNode->bFree != false || pNode->ulListIndex > 5 || pNode->ulBLockIndex >= MEM_SIZE)
+    {
+        return VOS_ERR;
+    }
+
+    ulBloackLevel = MEM_matchBlockLevelByListIndex(pNode->ulListIndex);
+    if (NULL_ULONG == ulBloackLevel)
+    {
+        return VOS_ERR;
+    }
+
+
+    
+    while (1)
+    {
+        ulBloackLevel = MEM_matchBlockLevelByListIndex(pNode->ulListIndex);
+
+        pBuddyNode = MEM_findBuddyForBlock(ulBloackLevel, pNode->ulBlockIndex)
+        if (NULL == pBuddyNode)
+        {
+            return VOS_OK;
+        }
+
+        (VOID)MEM_combineNode(pBuddyNode->ulListIndex, pBuddyNode, pNode, &pCombineNode);
+        
+        pNode = pCombineNode;
+    }
+    
+    return VOS_ERR;
+    
+
+    pNode->ulListIndex 
+}
 
 

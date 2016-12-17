@@ -129,6 +129,8 @@ SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex)
 
 void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree)
 {
+    ULONG ulListIndex = NULL_ULONG;
+
     if (NULL == pList || NULL == pNode)
     {
         //LOG_ERROR();��δʵ��
@@ -154,6 +156,14 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, bool bFree)
     pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
 
     /* 填数据 */
+    for (ulListIndex = 0; ulListIndex <= 5; ulListIndex++)
+    {
+        if (pList == &g_pLLMemList[ulListIndex])
+        {
+            pNode->ulListIndex = ulListIndex;
+        }
+    }           
+    
     pNode->ulBlockIndex = pNode - &g_cMemory[0];
     pNode->bFree = bFree;
 

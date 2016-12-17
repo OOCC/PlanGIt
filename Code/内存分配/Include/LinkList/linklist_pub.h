@@ -17,8 +17,9 @@
     
 typedef struct node {
     struct node  *pNext;
+    ULONG    ulListIndex;       /* 节点所在的链表索引 */
     ULONG    ulBLockIndex;          /* 内存索引 */
-    bool     bFree；            /* 此数据块是否空闲 */
+    bool     bFree;            /* 此数据块是否空闲 */
 //CHAR *pMem;           /* 当前节点所在的内存地址 */
 }SLL_NODE;
 
