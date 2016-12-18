@@ -67,7 +67,7 @@ SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
 {
     SLL_NODE *pNodeTmp = NULL;
     
-    pNodeTmp = g_pLLMemList[ulListIndex].stHead.pNext;
+    pNodeTmp = &g_pLLMemList[ulListIndex].stHead.pNext;
 
     while (NULL != pNodeTmp)
     {
