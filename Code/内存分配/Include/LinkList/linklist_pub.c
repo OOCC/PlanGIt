@@ -96,8 +96,16 @@ SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex)
 {
     SLL *pLL = NULL;
     SLL_NODE *pTmpNode = NULL;
+    ULONG ulListIndex;
 
-    pLL = &g_pLLMemList[ulBlockLevel];
+    ulListIndex = MEM_matchListIndexbyLevel(ulBlockLevel);
+    if (NULL_ULONG == ulListIndex)
+    {
+        return VOS_ERR;
+
+    }
+
+    pLL = &g_pLLMemList[ulListIndex];
     pTmpNode = &pLL->stHead;
 
     while (NULL != pTmpNode)

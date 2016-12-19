@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
    文件名     : MemoryAllcation.c
    
    修改历史   :    
@@ -385,7 +385,7 @@ ULONG MEM_separateNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmal
     SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex], true)
     SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex + ulBlockLevel], false)
 
-    *ppNodeSmallFree = &g_Memory[ulBlockIndex];
+    *ppNodeSmallFree = &g_Memory[ulBlockIndex + ulBlockLevel];
 
     return VOS_OK;
 
@@ -395,7 +395,7 @@ ULONG MEM_separateNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmal
 ULONG MEM_combineNode(ULONG ulListIndex, SLL_NODE *pBuddyNode, SLL_NODE *pNode, SLL_NODE **ppCombineNode)
 {
     SLL_NODE *pCombineNode = NULL; 
-    ULONG ulCombineListIndex = ++ulListIndex;
+    ULONG ulCombineListIndex = ulListIndex + 1;
 
     if (NULL == pBuddyNode || NULL == pNode)
     {
@@ -404,11 +404,11 @@ ULONG MEM_combineNode(ULONG ulListIndex, SLL_NODE *pBuddyNode, SLL_NODE *pNode, 
 
     if (pBuddyNode > pNode)
     {
-        pCombineNode = pBuddyNode;
+        pCombineNode = pNode;
     }
     else
     {
-        pCombineNode = pNode;
+        pCombineNode = pBuddyNode;
     }
 
 
@@ -556,6 +556,7 @@ ULONG free_x(VOID *p)
 {
     SLL_NODE *pNode = NULL;
     SLL_NODE *pBuddyNode = NULL;
+	SLL_NODE *pNodeTmp = NULL;
     SLL_NODE *pCombineNode = NULL;
     ULONG ulBloackLevel = NULL_ULONG;
 	ULONG ulBlockIndex = NULL_ULONG;
@@ -572,29 +573,33 @@ ULONG free_x(VOID *p)
         return VOS_ERR;
     }
 
-    ulBloackLevel = MEM_matchBlockLevelByListIndex(pNode->ulListIndex);
-    if (NULL_ULONG == ulBloackLevel)
-    {
-        return VOS_ERR;
-    }
-
-
-    
+    pNodeTmp = pNode;
     while (1)
     {
-        ulBloackLevel = MEM_matchBlockLevelByListIndex(pNode->ulListIndex);
+        ulBloackLevel = MEM_matchBlockLevelByListIndex(pNodeTmp->ulListIndex);
+        if (NULL_ULONG == ulBloackLevel)
+        {
+            return VOS_ERR;
+        }
 
-		ulBlockIndex = MEM_findBuddyForBlock(ulBloackLevel, pNode->ulBlockIndex);
-		pBuddyNode = &g_Memory[ulBlockIndex];
+        ulBlockIndex = MEM_findBuddyForBlock(ulBloackLevel, pNodeTmp->ulBlockIndex);
+
+        if (NULL_ULONG == ulBlockIndex)
+        {
+            pNodeTmp->bFree = true;
+            return VOS_OK;
+        }
+        
+        pBuddyNode = &g_Memory[ulBlockIndex];
 
         if (NULL == pBuddyNode)
         {
             return VOS_OK;
         }
 
-        (VOID)MEM_combineNode(pBuddyNode->ulListIndex, pBuddyNode, pNode, &pCombineNode);
+        (VOID)MEM_combineNode(pBuddyNode->ulListIndex, pBuddyNode, pNodeTmp, &pCombineNode);
         
-        pNode = pCombineNode;
+        pNodeTmp = pCombineNode;
     }
     
     return VOS_ERR;
