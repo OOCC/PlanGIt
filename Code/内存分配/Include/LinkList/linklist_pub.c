@@ -153,6 +153,7 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree)
 			if (pList == &g_pLLMemList[ulListIndex])
 			{
 				pNode->ulListIndex = ulListIndex;
+				break;
 			}
 		}
         pNode->ulBlockIndex = pNode - &g_Memory[0];
@@ -214,7 +215,7 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode)
     if (NULL == pNode->pNext)
     {
         pList->pstTail = pLast;
-    }  
+    }   
         
     
     /* 先连后断，因为先断了就找不到位置了 */

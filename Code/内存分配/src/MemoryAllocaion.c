@@ -354,7 +354,7 @@ SLL_NODE  *MEM_findCanAllocListIndex(ULONG ulNeedListIndex, ULONG *pulCanAllocLi
 
 
 /****************************************************************************
-   function name :      MEM_sepNode
+   function name :      MEM_separateNode
            input :      ulListIndex
                         pNode
                         
@@ -365,14 +365,14 @@ SLL_NODE  *MEM_findCanAllocListIndex(ULONG ulNeedListIndex, ULONG *pulCanAllocLi
                         拆开一个NODE，使其成为两个小NODE，并且左边的为空闲，右边的为使用
                         
 ****************************************************************************/
-ULONG MEM_sepNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree)
+ULONG MEM_separateNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree)
 {
     ULONG ulSmallListIndex = ulListIndex - 1;
     ULONG ulBlockIndex = pNode - &g_Memory[0];
     ULONG ulBlockLevel = NULL_ULONG;
 
 
-	ulBlockLevel = MEM_matchBlockLevelByListIndex(ulListIndex);
+	ulBlockLevel = MEM_matchBlockLevelByListIndex(ulSmallListIndex);
     if (ulBlockLevel == NULL_ULONG)
     {
         return VOS_ERR;
@@ -478,7 +478,7 @@ SLL_NODE *MEM_allocBlock(ULONG ulNeedBlockLevel)
                 pNodeTmp = pNodeSmall;
             }
 
-            (VOID)MEM_sepNode(ulCanAllocListIndexTmp, pNodeTmp, &pNodeSmall);
+            (VOID)MEM_separateNode(ulCanAllocListIndexTmp, pNodeTmp, &pNodeSmall);
 
             if (ulCanAllocListIndexTmp != 0)
             {
