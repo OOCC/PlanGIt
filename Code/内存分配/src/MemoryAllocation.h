@@ -25,7 +25,7 @@
 
 #define MEM_BLOCK_NUM  6
 
-extern SLL_NODE  g_Memory[MEM_SIZE];
+extern SLL_NODE  g_MemoryCtl[MEM_SIZE];
 extern SLL g_pLLMemList[MEM_BLOCK_NUM];
 
 VOID MEM_ALLOCA_INIT(VOID);

@@ -154,25 +154,14 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree)
 		pList->stHead.pNext = pNode;
 		pList->pstTail = pNode;
     	pNode->pNext = NULL;
-
-        /* 填数据 */
-		for (ulListIndex = 0; ulListIndex <= 5; ulListIndex++)
-		{
-			if (pList == &g_pLLMemList[ulListIndex])
-			{
-				pNode->ulListIndex = ulListIndex;
-				break;
-			}
-		}
-        pNode->ulBlockIndex = pNode - &g_Memory[0];
-        pNode->bFree = bFree;
-		return;
 	}
-
-    pList->pstTail->pNext = pNode;  	/* �Ƚ�pNode���뵽β�ڵ�֮�� */
-    pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
-    pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
-
+    else
+    {
+        pList->pstTail->pNext = pNode;  	/* �Ƚ�pNode���뵽β�ڵ�֮�� */
+        pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
+        pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
+    }
+    
     /* 填数据 */
     for (ulListIndex = 0; ulListIndex <= 5; ulListIndex++)
     {
@@ -182,7 +171,7 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree)
         }
     }           
     
-    pNode->ulBlockIndex = pNode - &g_Memory[0];
+    pNode->ulBlockIndex = pNode - &g_MemoryCtl[0];
     pNode->bFree = bFree;
 
     return;

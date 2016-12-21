@@ -20,7 +20,9 @@
 
 
 ULONG g_ulMemIndex = 0;
-SLL_NODE  g_Memory[MEM_SIZE] = { 0 };
+SLL_NODE  g_MemoryCtl[MEM_SIZE] = {0};   /* 控制块，这里不应该有MEM_SIZE那么大了 */
+CHAR      g_MemoryData[MEM_SIZE] = {0};  /* ���ݿ飬Ҳ���Ƿָ��û�ʹ�õ��ڴ�顣���ݿ�Ϳ��ƿ��index��һһ��Ӧ��  */
+
 
 SLL g_pLLMemList[MEM_BLOCK_NUM] = { 0 };
 
@@ -128,7 +130,7 @@ ULONG MEM_ALLOCA_LLNODE_INIT(ULONG ulMemIndex, SLL *pList, ULONG ulListIndex, UL
 
     for (index = 0; index < ulListNum; index++)
     {
-		pNode = &g_Memory[ulMemIndex];
+		pNode = &g_MemoryCtl[ulMemIndex];
         SLL_ADD(pList, pNode, true) 
 
         ulMemIndex += ulListIndex;
@@ -368,7 +370,7 @@ SLL_NODE  *MEM_findCanAllocListIndex(ULONG ulNeedListIndex, ULONG *pulCanAllocLi
 ULONG MEM_separateNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmallFree)
 {
     ULONG ulSmallListIndex = ulListIndex - 1;
-    ULONG ulBlockIndex = pNode - &g_Memory[0];
+    ULONG ulBlockIndex = pNode - &g_MemoryCtl[0];
     ULONG ulBlockLevel = NULL_ULONG;
 
 
@@ -382,10 +384,10 @@ ULONG MEM_separateNode(ULONG ulListIndex ,SLL_NODE *pNode, SLL_NODE **ppNodeSmal
     SLL_DEL(&g_pLLMemList[ulListIndex], pNode)
 
     /* 再添加小的节点 */
-    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex], true)
-    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_Memory[ulBlockIndex + ulBlockLevel], false)
+    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_MemoryCtl[ulBlockIndex], true)
+    SLL_ADD(&g_pLLMemList[ulSmallListIndex], &g_MemoryCtl[ulBlockIndex + ulBlockLevel], false)
 
-    *ppNodeSmallFree = &g_Memory[ulBlockIndex + ulBlockLevel];
+    *ppNodeSmallFree = &g_MemoryCtl[ulBlockIndex + ulBlockLevel];
 
     return VOS_OK;
 
@@ -574,38 +576,45 @@ ULONG free_x(VOID *p)
     }
 
     pNodeTmp = pNode;
-    while (1)
-    {
-        ulBloackLevel = MEM_matchBlockLevelByListIndex(pNodeTmp->ulListIndex);
-        if (NULL_ULONG == ulBloackLevel)
-        {
-            return VOS_ERR;
-        }
 
-        ulBlockIndex = MEM_findBuddyForBlock(ulBloackLevel, pNodeTmp->ulBlockIndex);
 
-        if (NULL_ULONG == ulBlockIndex)
-        {
-            pNodeTmp->bFree = true;
-            return VOS_OK;
-        }
-        
-        pBuddyNode = &g_Memory[ulBlockIndex];
+	while (1)
+	{
+		if (5 == pNodeTmp->ulListIndex)
+		{
+			pNodeTmp->bFree = true;
+			return VOS_OK;
+		}
 
-        if (NULL == pBuddyNode)
-        {
-            return VOS_OK;
-        }
+		ulBloackLevel = MEM_matchBlockLevelByListIndex(pNodeTmp->ulListIndex);
+		if (NULL_ULONG == ulBloackLevel)
+		{
+			return VOS_ERR;
+		}
 
-        (VOID)MEM_combineNode(pBuddyNode->ulListIndex, pBuddyNode, pNodeTmp, &pCombineNode);
-        
-        pNodeTmp = pCombineNode;
-    }
+		ulBlockIndex = MEM_findBuddyForBlock(ulBloackLevel, pNodeTmp->ulBlockIndex);
+
+		if (NULL_ULONG == ulBlockIndex)
+		{
+			pNodeTmp->bFree = true;
+			return VOS_OK;
+		}
+
+		pBuddyNode = &g_MemoryCtl[ulBlockIndex];
+
+		if (NULL == pBuddyNode)
+		{
+			return VOS_OK;
+		}
+
+		(VOID)MEM_combineNode(pBuddyNode->ulListIndex, pBuddyNode, pNodeTmp, &pCombineNode);
+
+		pNodeTmp = pCombineNode;
+	}
+	
+   
     
     return VOS_ERR;
-    
-
-	pNode->ulListIndex;
 }
 
 
