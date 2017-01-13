@@ -1,0 +1,4 @@
+deb http://snapshot.debian.org/archive/debian/20070730T000000Z/ lenny main
+deb-src http://snapshot.debian.org/archive/debian/20070730T000000Z/ lenny main
+deb http://snapshot.debian.org/archive/debian-security/20070730T000000Z/ lenny/updates main
+deb-src http://snapshot.debian.org/archive/debian-security/20070730T000000Z/ lenny/updates main
