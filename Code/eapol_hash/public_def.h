@@ -13,5 +13,6 @@
 #define  VOS_ERR  1
 
 #define  DESC(x) 1      /* 自定义描述宏 */
-
+#define NULL (void*)0
 #define NULL_ULONG 0xFFFFFFFFL
+#define NULL_USHORT 0xFFFF
