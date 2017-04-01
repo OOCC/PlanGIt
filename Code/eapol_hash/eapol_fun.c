@@ -1,7 +1,8 @@
 #include "eapol_fun.h"
 #include "type_def.h"
 #include "public_def.h"
-#include <stdlib.h>
+#include "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.10150.0\\ucrt\\stdlib.h"
+#include "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.10150.0\\ucrt\\string.h"
 
 /********************全局变量start*********************/
 EAP_HASH_HEAD_TAIL g_eapHashHeadAndTail = {0};
