@@ -1,0 +1,46 @@
+/*
+Default CSS Styles for the Category Posts Widget plugin
+Version: 4.1.4
+*/
+.cat-post-title {
+	font-size: 15px;
+	font-size: 0.9375rem;
+}
+.cat-post-current .cat-post-title {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+.cat-post-date,
+.cat-post-comment-num {
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 18px;
+	line-height: 1.125rem;
+	margin-bottom: 0;
+}
+.cat-post-date {
+	font-style: italic;
+}
+.cat-post-author {
+	margin-bottom: 0;
+}
+.cat-post-thumbnail img {
+	float: left; 
+	margin: 5px 10px 5px 0;
+}
+.cat-post-item {
+	border-bottom: 1px solid #ccc;
+	list-style: none;
+	list-style-type: none;
+	margin: 3px 0;
+	padding: 3px 0;
+}
+.cat-post-item:before, 
+.cat-post-item:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+.cat-post-item:last-child {
+	border-bottom: none;
+}
