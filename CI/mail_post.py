@@ -51,7 +51,8 @@ def send_mail(sub, content):
     sub:主题 
     content:内容 
     send_mail("aaa@126.com","sub","content") 
-    ''' 
+    '''
+    e = []
     me = mail_user+"<"+mail_user+"@"+mail_postfix+">"
     msg = MIMEText(content, _charset='gbk')
     msg['Subject'] = sub 
