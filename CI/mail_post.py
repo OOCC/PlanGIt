@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!C:\Python27\python 
 # -*- coding: utf-8 -*- 
 # 导入smtplib和MIMEText
 import smtplib, sys
@@ -40,7 +40,7 @@ def send_mail(sub, content):
     mailto_list = ["xueuy@qq.com, 635541030@qq.com, 982224886@qq.com, yyf050547@qq.com, dongzhixiangboy@qq.com"]
     ##################### 
     # 设置服务器，用户名、口令以及邮箱的后缀
-    mail_host="smtp.126.com" 
+    mail_host="smtp.126.com"
     mail_user="xy741" 
     mail_pass="xue123858" 
     mail_postfix="126.com" 
@@ -51,20 +51,21 @@ def send_mail(sub, content):
     content:内容 
     send_mail("aaa@126.com","sub","content") 
     '''
-    e = []
     me = mail_user+"<"+mail_user+"@"+mail_postfix+">"
     msg = MIMEText(content, _charset='gbk')
     msg['Subject'] = sub 
     msg['From'] = me 
     msg['To'] = ";".join(mailto_list) 
     try: 
-        s = smtplib.SMTP() 
+        s = smtplib.SMTP()
+        import socket
+        socket.getaddrinfo('smtp.126.com', 25)
         s.connect(mail_host) 
         s.login(mail_user,mail_pass) 
         s.sendmail(me, mailto_list, msg.as_string()) 
         s.close() 
         return True 
-    except (Exception, e):
+    except Exception, e:
         print (str(e))
         return False
 
