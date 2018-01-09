@@ -8,6 +8,7 @@ import os
 import re
 import sys
 
+
 def disk_space():
     # take shell command output
     ps = os.popen('git log -1')
