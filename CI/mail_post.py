@@ -41,16 +41,16 @@ def send_mail(sub, content):
     mailto_list = ["xueuy@qq.com, 635541030@qq.com, 982224886@qq.com, yyf050547@qq.com, dongzhixiangboy@qq.com"]
     ##################### 
     # 设置服务器，用户名、口令以及邮箱的后缀
-    mail_host="smtp.126.com"
-    mail_user="xy741" 
-    mail_pass="xue123858" 
-    mail_postfix="126.com" 
+    mail_host = "smtp.qq.com"
+    mail_user = "474746922"
+    mail_pass = "jpfakowylwskbigf"
+    mail_postfix = "qq.com"
     ###################### 
     ''''' 
     to_list:发给谁 
     sub:主题 
     content:内容 
-    send_mail("aaa@126.com","sub","content") 
+    send_mail("aaa@qq.com","sub","content") 
     '''
     me = mail_user+"<"+mail_user+"@"+mail_postfix+">"
     msg = MIMEText(content, _charset='gbk')
@@ -58,11 +58,11 @@ def send_mail(sub, content):
     msg['From'] = me 
     msg['To'] = ";".join(mailto_list) 
     try: 
-        s = smtplib.SMTP()
+        s = smtplib.SMTP_SSL()
         import socket
-        socket.getaddrinfo('smtp.126.com', 25)
-        s.connect(mail_host) 
-        s.login(mail_user,mail_pass) 
+        socket.getaddrinfo('smtp.qq.com', 587)
+        s.connect(mail_host)
+        s.login(mail_user, mail_pass)
         s.sendmail(me, mailto_list, msg.as_string()) 
         s.close() 
         return True 
