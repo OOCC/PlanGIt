@@ -38,7 +38,7 @@ def disk_space():
 def send_mail(sub, content):
     ############# 
     # 要发给谁，这里发给1个人
-    mailto_list = ["xueuy@qq.com, 635541030@qq.com, 982224886@qq.com, yyf050547@qq.com, dongzhixiangboy@qq.com, 1160798981@qq.com, marvin_xie@126.com"]
+    mailto_list = "474746922@qq.com,635541030@qq.com,982224886@qq.com,yyf050547@qq.com,marvin_xie@126.com,513123243@qq.com"
     ##################### 
     # 设置服务器，用户名、口令以及邮箱的后缀
     mail_host = "smtp.qq.com"
@@ -56,14 +56,14 @@ def send_mail(sub, content):
     msg = MIMEText(content, _charset='gbk')
     msg['Subject'] = sub 
     msg['From'] = me 
-    msg['To'] = ";".join(mailto_list) 
+    msg['To'] = mailto_list
     try: 
         s = smtplib.SMTP_SSL()
         import socket
         socket.getaddrinfo('smtp.qq.com', 587)
         s.connect(mail_host)
         s.login(mail_user, mail_pass)
-        s.sendmail(me, mailto_list, msg.as_string()) 
+        s.sendmail(me, mailto_list.split(','), msg.as_string())
         s.close() 
         return True 
     except Exception, e:
