@@ -21,3 +21,23 @@
 pop()和remove()删除的元素都可以拿来再使用但是： 
 1、pop()是在删除元素的同时将删除的元素放进一个可以使用的变量中存储 
 2、remove()是先将要删除的元素放进一个变量中，然后将变量放进remove()中执行删除，也可以直接将删除的元素放进remove()执行删除
+
+2018/1/20
+    组织列表方法： 
+使用方法sort（）对列表进行永久性排序如：
+cars=【‘bmw’，‘audi’‘toyota’‘subaru’】
+cars.sort()
+print(cars)
+【‘audi’，‘bmw’‘subaru’‘toyota】
+反转列表元素的排列顺序，可使用reverse（）
+cars=【‘bwm’‘audi’‘toyota’‘subaru’】
+print（cars）
+cars.reverse（）
+print（cars）
+注意，reverse（）不是指按与字母顺序相反的顺序排列列表元素，而只是反转列表元素的排列顺序：
+【‘bmw’，‘audi’，‘toyota’，‘subaru’】
+【‘subaru’，‘toyota’‘audi’，‘bmw’】
+使用函数len（））可以快速熟悉列表长度
+cars=【‘bwm’‘audi’‘toyota’‘subaru’】
+len（cars）
+4
