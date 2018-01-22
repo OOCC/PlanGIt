@@ -25,7 +25,7 @@ pop()和remove()删除的元素都可以拿来再使用但是：
 2018/1/20
     组织列表方法： 
 使用方法sort（）对列表进行永久性排序如：
-cars=【‘bmw’，‘audi’‘toyota’‘subaru’】
+cars=['bmw', 'audi', 'toyota', 'subaru']
 cars.sort()
 print(cars)
 【‘audi’，‘bmw’‘subaru’‘toyota】
