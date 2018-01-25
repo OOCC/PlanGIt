@@ -42,8 +42,8 @@ def send_mail(sub, content):
     ##################### 
     # 设置服务器，用户名、口令以及邮箱的后缀
     mail_host = "smtp.qq.com"
-    mail_user = "474746922"
-    mail_pass = "jpfakowylwskbigf"
+    mail_user = "yyf050547"
+    mail_pass = "pkmrjkticpxvbiie"
     mail_postfix = "qq.com"
     ###################### 
     ''''' 
