@@ -1,0 +1,66 @@
+vxbDev 代表一个设备，在VxWorks启动时，通过hwconfig.c中的数组创建
+	--pDriver 设备的驱动指针(struct vxbDevRegInfo *类型)
+	--pParentBus 表示设备所挂载的总线，如PLB，PCI，USB等等（BUS提供devlist,instlist，用以串联所有挂载
+	在该总线上的设备和实例（设备+驱动））
+	
+vxbDevRegInfo 代表一个驱动，最终会与设备相连，形成一个实体
+
+prjConfig.c中会调用各个标准的vxbus架构注册函数xxxRegister，完成设备驱动的注册。
+
+vxbDevRegister
+	1、将驱动插入到全局驱动列表中（pDriverListHead）
+	2、vxbDevIterate：循环bus上（如plb）注册的设备（如果是flags标志是循环孤儿），并调用vxbNewDriver匹配孤儿设备和驱动
+	3、vxbNewDriver：
+		1）获取父总线的vxbDevMatch方法，比对设备和驱动的名称，如果不一致，注册失败，返回错误
+		2）（可选）如果驱动的probe方法定义，匹配成功后，调用驱动的probe方法
+		3）绑定设备和驱动： pDev->pDriver = pDriver
+		4）将匹配成功的设备从bus上摘掉：找到孤儿设备的位置，让前一个孤儿设备指向后一个孤儿设备即可
+		5）将匹配成功的设备插入bus上的instlist中：找到instlist的尾巴，直接插到尾部
+		6）根据情况vxbInitPhase（1、2、3）调用驱动定义的三级初始化函数：devInstanceInit、devInstanceInit2、devInstanceConnect，
+		并将设备的flags标志置为三级初始化完成（也就是书中所说，不同阶段将调用对应的驱动初始化函数）
+		
+
+plb总线在初始化时（plbRegister）将实现设备注册，驱动注册，注册的结构体信息如下所示
+LOCAL struct drvBusFuncs plbBusFuncs =
+    {
+    NULL,               /* devInstanceInit */
+    NULL,               /* devInstanceInit2 */
+    NULL                /* devInstanceConnect */
+    };
+
+LOCAL struct vxbDevRegInfo plbRegInfo =
+    {
+    NULL,               /* pNext */
+    VXB_DEVID_BUSCTRL,  /* devID */
+    VXB_BUSID_PLB,      /* busID */
+    VXB_VER_5_0_0,      /* vxbVersion */
+    "plbCtlr",          /* name */
+    &plbBusFuncs,       /* pDrvBusFuncs */
+    NULL,               /* pMethods */
+    NULL                /* devProbe */
+    };
+	
+LOCAL struct vxbDev plbCtlr =
+    {
+    NULL,                               /* pNext */
+    NULL,                               /* pParentBus */
+    0,                                  /* versionCounter */
+    0,					/* unit number */
+    NULL,                               /* access functions */
+    NULL,                               /* methods */
+    { NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL},    /* BAR virt address */
+    { NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL},    /* BAR phys address */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},	/* BAR size */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},    /* BAR flags */
+    {(struct vxbBusPresent *)NULL},     /* bus-specific information */
+    NULL,                               /* pBusSpecificDevInfo */
+    VXB_BUSID_PLB,                      /* busID */
+    NULL,                               /* interrupt information */
+    "plbCtlr",                          /* device name */
+    &plbRegInfo,                        /* driver registration info */
+    NULL,                               /* per-driver info */
+    NULL,				/* parameter info */
+    0
+    };
