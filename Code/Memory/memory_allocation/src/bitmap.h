@@ -1,4 +1,3 @@
-#include "./Include/public_headfile/type_def.h"
 
 #ifndef _BITMAP_H
 #define _BITMAP_H
@@ -37,7 +36,7 @@ typedef struct bmp {
                 if (BMP_MEMBER((bm), (bit)))
 
 //#define BMP_BMCLEAR(bm)		\
-	(BMP_WORD_GET(bm, 0) = BMP_WORD_GET(bm, 1) = 0)
+//	(BMP_WORD_GET(bm, 0) = BMP_WORD_GET(bm, 1) = 0)
 #define BMP_BMNULL(bm)		\
 	(BMP_WORD_GET(bm, 0) == 0 && BMP_WORD_GET(bm, 1) == 0)
 #define BMP_BMEQ(bma, bmb)	\
@@ -83,10 +82,13 @@ typedef struct bmp {
 
 INT32 bmp_create(UINT32 **bmp, ULONG request_size);
 INT32 bmp_set(UINT32 *bmp, ULONG bit);
+INT32 bmp_get(UINT32 *bmp, ULONG bit);
 INT32 bmp_clear(UINT32 *bmp);
 INT32 bmp_add(UINT32 *bmp, ULONG bit);
 INT32 bmp_remove(UINT32 *bmp, ULONG bit);
 INT32 bmp_delete(UINT32 *bmp);
+
+
 			
 #endif	/* ! BMP_H */
 

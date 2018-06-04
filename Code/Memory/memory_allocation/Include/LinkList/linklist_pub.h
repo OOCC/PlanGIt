@@ -14,15 +14,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "../public_headfile/public_def.h"
-#include "../public_headfile/type_def.h"
+#include "public_def.h"
+#include "type_def.h"
     
 typedef struct node {
     struct node  *pNext;
-    ULONG    ulListIndex;       /* 节点所在的链表索引 */
-    ULONG    ulBlockIndex;          /* 内存索引 */
-    ULONG     bFree;            /* 此数据块是否空闲 */
-//CHAR *pMem;           /* 当前节点所在的内存地址 */
 }SLL_NODE;
 
 
@@ -34,12 +30,13 @@ typedef struct {
 }SLL;  /* 头是结构体，采用尾插法 */
 
 #if DESC(" function")
-SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode);
-void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree);
-void DeleteNode(SLL *pList, SLL_NODE *pNode);
-SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex);
-SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex);
 
+SLL_NODE *FindFreeNodebyLevel(int level);
+SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode);
+ULONG FindLevelByNode(SLL_NODE *pNode);
+SLL_NODE *FindNode(ULONG level, SLL_NODE *pNode);
+void InsertNode(SLL *pList, SLL_NODE *pNode);
+void DeleteNode(SLL *pList, SLL_NODE *pNode);
 #endif
 
 
@@ -51,16 +48,16 @@ SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex);
 }
 
 /*#define SLL_COUNT(pList) {\
-    ((SLL *)pList)->ulNodeNum;\
+	((SLL *)pList)->ulNodeNum;\
 }*/
 #define SLL_COUNT(pList) ((SLL *)pList)->ulNodeNum
 
-#define SLL_ADD(pList, pNode, bFree, Data) {\
-    InsertNode(pList, pNode, bFree, Data);\
+#define SLL_ADD(pList, pNode) {\
+    InsertNode(pList, pNode);\
 }
 
-#define SLL_DEL(pList, pNode, Data) {\
-    DeleteNode(pList, pNode, Data);\
+#define SLL_DEL(pList, pNode) {\
+    DeleteNode(pList, pNode);\
 } 
 
 

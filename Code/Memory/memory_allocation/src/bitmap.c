@@ -1,8 +1,9 @@
-#include "bitmap.h"
 #include <stdlib.h>
-#include "./include/public_headfile/public_def.h"  
+#include "type_def.h"
+#include "public_def.h"  
 #include <string.h>
 #include <stdio.h>
+#include "bitmap.h"
 
 #define BMP_MAX_LEVEL	20
 
@@ -45,7 +46,8 @@ INT32 bmp_create(UINT32 **bmp, ULONG request_size)
 			if(NULL == g_bmp[ix].pbits) { 
 				goto BMP_FAILED;
 			} 
-			
+			memset(g_bmp[ix].pbits, 0, num * sizeof(UINT32));
+
 			*bmp = g_bmp[ix].pbits;
 			g_bmp[ix].request_size = request_size;
 			break;
@@ -68,6 +70,20 @@ BMP_FAILED:
                         
 ****************************************************************************/
 INT32 bmp_set(UINT32 *bmp, ULONG bit)
+{
+	return VOS_OK;
+}
+
+/****************************************************************************
+function name :      bmp_set
+input :      bmp，bit
+output :
+return value :
+history :
+1 :      2018-6-4 created by MarvinXie
+设置一组位图，如位图宽度为32bits，则本接口直接操作整个32bits
+****************************************************************************/
+INT32 bmp_get(UINT32 *bmp, ULONG bit)
 {
 	return VOS_OK;
 }
@@ -110,7 +126,7 @@ INT32 bmp_add(UINT32 *bmp, ULONG bit)
 	if (NULL == parent)
 		return VOS_ERR;
 
-	BMP_BIT_SET(parent, bit);
+	BMP_BIT_ADD(parent, bit);
 	
 	return VOS_OK;
 }

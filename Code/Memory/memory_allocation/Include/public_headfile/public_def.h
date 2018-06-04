@@ -8,7 +8,7 @@
        �޸����� :
 ****************************************************************************/
 
-
+#include <stdio.h>
 #define  VOS_OK   0
 #define  VOS_ERR  1
 
@@ -17,4 +17,4 @@
 #define NULL_ULONG 0xFFFFFFFFL
 
 #define offsetof(TYPE,MEMBER)   ((unsigned int) &((TYPE *)0)->MEMBER)
-#define container_of(PTR,TYPE,MEMBER)    ((TYPE *) ((char *)PTR - offsetof(TYPE,MEMBER)))
+#define container_of(PTR,TYPE,MEMBER)    ((TYPE *) ((char *)PTR - offsetof(TYPE,MEMBER)));

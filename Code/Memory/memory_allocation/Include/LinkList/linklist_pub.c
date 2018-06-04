@@ -10,12 +10,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "../public_headfile/public_def.h"
-#include "../public_headfile/type_def.h"
-#include "../../src/MemoryAllocation.h"
-
-
-
+#include "public_def.h"
+#include "type_def.h"
+#include "linklist_pub.h"
+#include "buddy_algorithm.h"
+#include "bitmap.h"
 
 /****************************************************************************
    function name :      FindNodeByList
@@ -63,15 +62,14 @@ SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
                1 :      2016-12-17 created by xueyu
                         遍历链表，通过链表index找到空闲节点
 *****************************************************************************/
-SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
+SLL_NODE *FindFreeNodebyLevel(int level)
 {
     SLL_NODE *pNodeTmp = NULL;
-    
-    pNodeTmp = &g_pLLMemList[ulListIndex].stHead.pNext;
+    pNodeTmp = g_pLLMemList[level].stHead.pNext;
 
     while (NULL != pNodeTmp)
     {
-        if (true == pNodeTmp->bFree)
+        if (false == bmp_get(g_bmp[level], BMP_OFFSET(pNodeTmp, level)) ) /* bmp值为1表示内存空间可以使用 */
         {
             return pNodeTmp;
         }
@@ -80,6 +78,30 @@ SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
 
     return NULL;
 }
+
+ULONG FindLevelByNode(SLL_NODE *pNode)
+{
+    SLL_NODE *pNodeTmp = NULL;
+    int level = MAX_LEVEL;
+    pNodeTmp = g_pLLMemList[level].stHead.pNext;
+
+    while (level--) 
+    {
+        pNodeTmp = g_pLLMemList[level].stHead.pNext;
+        
+        while (NULL != pNodeTmp)
+        {
+            if (pNodeTmp == pNode)
+            {
+                return level;
+            }
+            pNodeTmp = pNodeTmp->pNext;
+        }
+    }
+    return NULL_ULONG;
+    
+}
+
 
 
 /****************************************************************************
@@ -92,34 +114,23 @@ SLL_NODE *FindFreeNodebyListIndex(ULONG ulListIndex)
                1 :      2016-12-08 created by xueyu
                         遍历链表，通过index找到对应level的节点                        
 ****************************************************************************/
-SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex)
+SLL_NODE *FindNode(ULONG level, SLL_NODE *pNode)
 {
-    SLL *pLL = NULL;
-    SLL_NODE *pTmpNode = NULL;
-    ULONG ulListIndex;
+    SLL_NODE *pNodeTmp = NULL;
+    pNodeTmp = g_pLLMemList[level].stHead.pNext;
 
-    ulListIndex = MEM_matchListIndexbyLevel(ulBlockLevel);
-    if (NULL_ULONG == ulListIndex)
+    while (NULL != pNodeTmp)
     {
-        return VOS_ERR;
-
-    }
-
-    pLL = &g_pLLMemList[ulListIndex];
-    pTmpNode = &pLL->stHead;
-
-    while (NULL != pTmpNode)
-    {
-        if (pTmpNode->ulBlockIndex == ulBlockIndex)
+        if (pNode == pNodeTmp) /* bmp值为1表示内存空间可以使用 */
         {
-            return pTmpNode;
+            return pNodeTmp;
         }
-
-        pTmpNode = pTmpNode->pNext;
+        pNodeTmp = pNodeTmp->pNext;
     }
 
     return NULL;
 }
+
 
 
 
@@ -136,7 +147,7 @@ SLL_NODE *FindNodeByBlockIndex(ULONG ulBlockLevel, ULONG ulBlockIndex)
                         修改为单向链表
 ****************************************************************************/
 
-void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree, ULONG Data)
+void InsertNode(SLL *pList, SLL_NODE *pNode)
 {
     ULONG ulListIndex = NULL_ULONG;
 
@@ -151,7 +162,7 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree, ULONG Data)
 	/* ��һ���ڵ� */
 	if (pList->stHead.pNext == NULL)
 	{
-		pList->stHead.pNext = pNode;1
+		pList->stHead.pNext = pNode;
 		pList->pstTail = pNode;
     	pNode->pNext = NULL;
 	}
@@ -162,18 +173,6 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, ULONG bFree, ULONG Data)
         pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
     }
     
-1    /* 填数据 */
-    for (ulListIndex = 0; ulListIndex <= 5; ulListIndex++)
-    {
-        if (pList == &g_pLLMemList[ulListIndex])
-        {
-            pNode->ulListIndex = ulListIndex;
-        }
-    }           
-    
-    pNode->ulBlockIndex = pNode - &g_MemoryCtl[0];
-    pNode->bFree = bFree;
-
     return;
 }
 

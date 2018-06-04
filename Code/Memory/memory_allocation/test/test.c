@@ -1,12 +1,43 @@
 #include <stdio.h>
-#include "../src/memoryallocation.h"
-
+#include "public_def.h"
+#include "type_def.h"
+#include "linklist_pub.h"
+#include "buddy_algorithm.h"
+#include "bitmap.h"
 
 
 
 int main()
 {
-    MEM_ALLOCA_INIT();
+	//MEM_ALLOC_INIT();
+
+
+	UINT32 *bitmap[10] = { 0 };
+	INT32 ix = 0;
+	ULONG request_size = 1024 * 1024 / 32;
+	bmp_t *parent = NULL;
+	char key;
+
+	for (ix = 0; ix < 10; ix++) {
+		bmp_create(&bitmap[ix], request_size);
+		request_size /= 2;
+	}
+
+
+	for (ix = 0; ix < 10; ix++) {
+		bmp_add(bitmap[ix], ix);
+	}
+
+
+	scanf_s("%c", &key);
+
+	for (ix = 0; ix < 10; ix++) {
+		parent = container_of(bitmap[ix], bmp_t, pbits);
+		bmp_delete(parent->pbits);
+	}
+	return 0;
+
+/*
 
     int *p1 = NULL;
     int *p2 = NULL;
@@ -37,5 +68,5 @@ int main()
 
     a = 1;
 
-
+	*/
 }
