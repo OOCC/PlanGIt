@@ -1,6 +1,6 @@
 
 #define MAX_LEVEL 10
-#define MEM_SIZE 1024 * 1024
+#define MEM_SIZE (1024 * 1024 )
 #define MEM_UNIT_SIZE 1  /* 单位都是KB， 1KB = 1024 BYTE */
 
 extern char *g_MemoryData;

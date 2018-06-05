@@ -159,8 +159,8 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, char used)
     
     pList->ulNodeNum++;
     
-	/* ��һ���ڵ� */
-	if (pList->stHead.pNext == NULL)
+	/* 这里不能用head来判断，因为head指向了g_pLLMemList的首地址，是有值的 */
+	if (pList->pstTail == NULL)
 	{
 		pList->stHead.pNext = pNode;
 		pList->pstTail = pNode;
@@ -218,7 +218,8 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode)
     /* 先连后断，因为先断了就找不到位置了 */
     pLast->pNext = pNode->pNext;
     pNode->pNext = NULL;
-       
+	pNode->used = 0;
+
     return;
 }
 

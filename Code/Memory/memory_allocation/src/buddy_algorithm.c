@@ -61,7 +61,7 @@ ULONG MEM_ALLOCA_LLNODE_INIT(ULONG ulMemIndex, SLL *pList, ULONG level, ULONG ul
         pNode = g_MemoryData + ulMemIndex;
         
 		SLL_ADD(pList, pNode, 0);
-        bmp_set_bit(g_bmp[level], BMP_OFFSET(pNode, level));
+        //bmp_set_bit(g_bmp[level], BMP_OFFSET(pNode, level));
 
         ulMemIndex += (1<<level)*1024; 
     }
@@ -167,7 +167,7 @@ ULONG MEM_separateNode(ULONG ulListLevel, SLL_NODE *pNode)
     bmp_clear_bit(g_bmp[ulListLevel], BMP_OFFSET(pNode, ulListLevel));
     
     /* 再添加小的节点 */
-	SLL_ADD(&g_pLLMemList[ulSmallLevel], pNode, 1);
+   	SLL_ADD(&g_pLLMemList[ulSmallLevel], pNode, 1);
   	SLL_ADD(&g_pLLMemList[ulSmallLevel], (char *)pNode + (1 << ulSmallLevel) * 1024, 0);
     bmp_set_bit(g_bmp[ulSmallLevel], BMP_OFFSET(pNode, ulSmallLevel));
     
@@ -236,6 +236,7 @@ SLL_NODE *MEM_allocBlock(int ulNeedBlockLevel)
     if (ulNeedBlockLevel == ulCanAllocLevel)
     {
         bmp_set_bit(g_bmp[ulCanAllocLevel], BMP_OFFSET(pNode, ulCanAllocLevel));
+        pNode->used = 1;
         return pNode;
     }
     else
@@ -365,7 +366,7 @@ ULONG MEM_combineNode(ULONG level, SLL_NODE *pBuddyNode, SLL_NODE *pNode, SLL_NO
     SLL_DEL(&g_pLLMemList[level], pBuddyNode);
     bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
 
-    SLL_ADD(&g_pLLMemList[ulCombineLevel], pCombineNode, 1);
+    SLL_ADD(&g_pLLMemList[ulCombineLevel], pCombineNode, 0);
     bmp_set_bit(g_bmp[ulCombineLevel], BMP_OFFSET(pCombineNode, ulCombineLevel));
     
     *ppCombineNode = pCombineNode;
@@ -421,7 +422,8 @@ ULONG free_x(VOID *p)
 
         if (NULL == pBuddyNode)
         {
-        	return VOS_OK;
+			bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
+			return VOS_OK;
         }
 
         (VOID)MEM_combineNode(level, pBuddyNode, pNode, &pCombineNode);

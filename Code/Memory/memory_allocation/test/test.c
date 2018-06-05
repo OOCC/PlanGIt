@@ -38,6 +38,18 @@ UINT16 get_used_ptr()
 }
 
 
+void free_all_mem()
+{
+	int ix = 0;
+	for (; ix < MAX_PTR_NUM; ix++) {
+		if (NULL != g_ptr[ix]) {
+			free_x(g_ptr[ix]);
+			g_ptr[ix] = NULL;
+		}
+	}
+	return;
+}
+
 int test()
 {
 	int ret = 0;
@@ -59,12 +71,14 @@ int test()
 
 
 	while (1) {
-		srand((int)time(NULL));
-		r = (UINT16)rand();
+		srand((int)time(NULL) );
+		r = ((UINT16)rand());
 		if (r % 2) {
 			ptr = malloc_x(r);
-			if (NULL == ptr)
+			if (NULL == ptr) {
+				free_all_mem();
 				continue;
+			}
 			/* save ptr to array */
 			index = get_free_ptr();
 			if (0xffff == index)
