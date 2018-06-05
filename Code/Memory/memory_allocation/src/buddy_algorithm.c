@@ -31,7 +31,7 @@ unsigned int  *g_bmp[MAX_LEVEL+1]          = {0};
 void bmp_init()
 {
     int i = 0;
-    int request_size = 1024*1024/32;
+    int request_size = 1024*1024;
     
     for (i = 0; i <= MAX_LEVEL+1; i++) {
         /* level 0时，每个数据块占2^0kb的大小，总共需要1G/32个int */
@@ -60,7 +60,7 @@ ULONG MEM_ALLOCA_LLNODE_INIT(ULONG ulMemIndex, SLL *pList, ULONG level, ULONG ul
         /* ulMemIndex是偏移量，表示当前初始化到内存空间的哪个位置了 */
         pNode = g_MemoryData + ulMemIndex;
         
-		SLL_ADD(pList, pNode)
+		SLL_ADD(pList, pNode, 0);
         bmp_set_bit(g_bmp[level], BMP_OFFSET(pNode, level));
 
         ulMemIndex += (1<<level)*1024; 
@@ -133,18 +133,15 @@ VOID MEM_ALLOC_INIT(VOID)
 
 int calc_mem_level(ULONG size)
 {
-    int level = 1;
-    int size_kb = size / 1024; 
-    
-    if (1 >= size_kb) 
-        return 0;
-  
-    while (1 != size_kb  ) {
-        size_kb /= 2;
+    int level = 0;
+        
+    while (level <= MAX_LEVEL) {
+		if (size <= (1 << level)*1024 )
+			return level;
         level++;
     }
     
-    return level;
+    return NULL_ULONG;
 }
 
 
@@ -170,8 +167,8 @@ ULONG MEM_separateNode(ULONG ulListLevel, SLL_NODE *pNode)
     bmp_clear_bit(g_bmp[ulListLevel], BMP_OFFSET(pNode, ulListLevel));
     
     /* 再添加小的节点 */
-	SLL_ADD(&g_pLLMemList[ulSmallLevel], pNode);
-  	SLL_ADD(&g_pLLMemList[ulSmallLevel], (char *)pNode + (1 << ulSmallLevel) * 1024);
+	SLL_ADD(&g_pLLMemList[ulSmallLevel], pNode, 1);
+  	SLL_ADD(&g_pLLMemList[ulSmallLevel], (char *)pNode + (1 << ulSmallLevel) * 1024, 0);
     bmp_set_bit(g_bmp[ulSmallLevel], BMP_OFFSET(pNode, ulSmallLevel));
     
     return VOS_OK;
@@ -290,6 +287,8 @@ void *malloc_x(ULONG ulSize)
 
     /* size < MAX_LEVEL 时，分配的时候不需要考虑合并,但是找不到匹配的就要拆开大的 */
     ulAlloclevel = calc_mem_level(ulSize);
+	if (NULL_ULONG == ulAlloclevel)
+		return NULL;
 
     /* 分配内存 */
     if ( !(pNode = MEM_allocBlock(ulAlloclevel) ))
@@ -366,7 +365,7 @@ ULONG MEM_combineNode(ULONG level, SLL_NODE *pBuddyNode, SLL_NODE *pNode, SLL_NO
     SLL_DEL(&g_pLLMemList[level], pBuddyNode);
     bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
 
-    SLL_ADD(&g_pLLMemList[ulCombineLevel], pCombineNode);
+    SLL_ADD(&g_pLLMemList[ulCombineLevel], pCombineNode, 1);
     bmp_set_bit(g_bmp[ulCombineLevel], BMP_OFFSET(pCombineNode, ulCombineLevel));
     
     *ppCombineNode = pCombineNode;

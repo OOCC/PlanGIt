@@ -147,7 +147,7 @@ SLL_NODE *FindNode(ULONG level, SLL_NODE *pNode)
                         修改为单向链表
 ****************************************************************************/
 
-void InsertNode(SLL *pList, SLL_NODE *pNode)
+void InsertNode(SLL *pList, SLL_NODE *pNode, char used)
 {
     ULONG ulListIndex = NULL_ULONG;
 
@@ -172,7 +172,8 @@ void InsertNode(SLL *pList, SLL_NODE *pNode)
         pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
         pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
     }
-    
+
+    pNode->used = used;
     return;
 }
 

@@ -7,7 +7,7 @@
 
 #define BMP_MAX_LEVEL	20
 
-static bmp_t g_bmp[BMP_MAX_LEVEL] = {0};
+static bmp_t g_bitmap[BMP_MAX_LEVEL] = {0};
 static INT32 g_inited = 0;
 
 /****************************************************************************
@@ -27,7 +27,7 @@ INT32 bmp_create(UINT32 **bmp, ULONG request_size)
 	
 	/* For VS2010 C++ Project Test! */
 	if(!g_inited){
-		memset(g_bmp, 0, sizeof(g_bmp));
+		memset(g_bitmap, 0, sizeof(g_bitmap));
 		g_inited = 1;
 	}
 
@@ -39,15 +39,15 @@ INT32 bmp_create(UINT32 **bmp, ULONG request_size)
 	num = BMP_WORD_MAX(request_size); 
 
 	for(ix = 0; ix < BMP_MAX_LEVEL; ix++) {
-		if(NULL == g_bmp[ix].pbits) {
-			g_bmp[ix].pbits = (UINT32 *)malloc(num*sizeof(UINT32));
-			if(NULL == g_bmp[ix].pbits) { 
+		if(NULL == g_bitmap[ix].pbits) {
+			g_bitmap[ix].pbits = (UINT32 *)malloc(num*sizeof(UINT32));
+			if(NULL == g_bitmap[ix].pbits) { 
 				goto BMP_CREATE_FAILED;
 			} 
-			memset(g_bmp[ix].pbits, 0, num * sizeof(UINT32));
+			memset(g_bitmap[ix].pbits, 0, num * sizeof(UINT32));
 
-			*bmp = g_bmp[ix].pbits;
-			g_bmp[ix].request_size = request_size;
+			*bmp = g_bitmap[ix].pbits;
+			g_bitmap[ix].request_size = request_size;
 			break;
 		}
 	}
@@ -120,8 +120,8 @@ INT32 bmp_set_bit(UINT32 *bmp, ULONG bit)
 		return VOS_ERR;
 	
     for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
-        if (bmp == g_bmp[ix].pbits) {
-            BMP_BIT_ADD(g_bmp[ix], bit);
+        if (bmp == g_bitmap[ix].pbits) {
+            BMP_BIT_ADD(g_bitmap[ix], bit);
             return VOS_OK;
         }
     }
@@ -147,8 +147,8 @@ INT32 bmp_clear_bit(UINT32 *bmp, ULONG bit)
     		return VOS_ERR;
     	
     for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
-        if (bmp == g_bmp[ix].pbits) {
-            BMP_BIT_REMOVE(g_bmp[ix], bit);
+        if (bmp == g_bitmap[ix].pbits) {
+            BMP_BIT_REMOVE(g_bitmap[ix], bit);
             return VOS_OK;
         }
     }
@@ -176,8 +176,8 @@ INT32 bmp_get_bit(UINT32 *bmp, ULONG bit)
         return VOS_ERR;
 
      for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
-        if (bmp == g_bmp[ix].pbits) {
-			ret = BMP_BIT_GET(g_bmp[ix], bit);
+        if (bmp == g_bitmap[ix].pbits) {
+			ret = BMP_BIT_GET(g_bitmap[ix], bit);
             return ret;
         }
     }   
@@ -202,9 +202,9 @@ INT32 bmp_delete(UINT32 *bmp)
 
 	if(bmp) {
         for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
-            if (bmp == g_bmp[ix].pbits) {
-                free(g_bmp[ix].pbits);
-                g_bmp[ix].request_size = 0;
+            if (bmp == g_bitmap[ix].pbits) {
+                free(g_bitmap[ix].pbits);
+                g_bitmap[ix].request_size = 0;
                 return VOS_OK;
             }
         }
@@ -216,5 +216,5 @@ INT32 bmp_delete(UINT32 *bmp)
 
 bmp_t *bmp_get_bit_parent(void)
 {
-    return g_bmp;
+    return g_bitmap;
 }

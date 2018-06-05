@@ -19,6 +19,7 @@
     
 typedef struct node {
     struct node  *pNext;
+	char used;
 }SLL_NODE;
 
 
@@ -35,7 +36,7 @@ SLL_NODE *FindFreeNodebyLevel(int level);
 SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode);
 ULONG FindLevelByNode(SLL_NODE *pNode);
 SLL_NODE *FindNode(ULONG level, SLL_NODE *pNode);
-void InsertNode(SLL *pList, SLL_NODE *pNode);
+void InsertNode(SLL *pList, SLL_NODE *pNode, char used);
 void DeleteNode(SLL *pList, SLL_NODE *pNode);
 #endif
 
@@ -52,8 +53,8 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode);
 }*/
 #define SLL_COUNT(pList) ((SLL *)pList)->ulNodeNum
 
-#define SLL_ADD(pList, pNode) {\
-    InsertNode(pList, pNode);\
+#define SLL_ADD(pList, pNode, used) {\
+    InsertNode(pList, pNode, used);\
 }
 
 #define SLL_DEL(pList, pNode) {\

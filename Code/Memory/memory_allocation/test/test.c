@@ -10,28 +10,31 @@
 
 #define MAX_PTR_NUM 65535
 int *g_ptr[MAX_PTR_NUM] = { 0 };
-
+UINT16 g_ptr_num = 0;
 
 UINT16 get_free_ptr()
 {
 	int ix = 0;
 	for (; ix < MAX_PTR_NUM; ix++) {
 		if (NULL == g_ptr[ix]) {
+			g_ptr_num++;
 			return ix;
 		}
 
 	}
-	return NULL;
+	return 0xffff;
 }
 
 UINT16 get_used_ptr()
 {
 	int ix = 0;
 	for (; ix < MAX_PTR_NUM; ix++) {
-		if (NULL != g_ptr[ix])
+		if (NULL != g_ptr[ix]) {
+			g_ptr_num--;
 			return ix;
+		}
 	}
-	return NULL;
+	return 0xffff;
 }
 
 
@@ -42,17 +45,36 @@ int test()
 	int *ptr = NULL;
 	UINT16 index = 0;
 
+
+	int a = calc_mem_level(1024);
+	a = calc_mem_level(1023);
+	a = calc_mem_level(1);
+	a = calc_mem_level(1024+100);
+	a = calc_mem_level(1024 + 1024);
+	a = calc_mem_level(1024*3 -1);
+	a = calc_mem_level(1024*3);
+
+
+
+
+
 	while (1) {
 		srand((int)time(NULL));
 		r = (UINT16)rand();
 		if (r % 2) {
 			ptr = malloc_x(r);
+			if (NULL == ptr)
+				continue;
 			/* save ptr to array */
 			index = get_free_ptr();
+			if (0xffff == index)
+				return index;
 			g_ptr[index] = ptr;
 		}
 		else {
 			index = get_used_ptr();
+			if (0xffff == index)
+				continue;
 			free_x(g_ptr[index]);
 			g_ptr[index] = NULL;
 		}
