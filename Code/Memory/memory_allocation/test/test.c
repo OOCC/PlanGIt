@@ -7,17 +7,17 @@
 #include <stdlib.h>
 #include <time.h>
 
-
 #define MAX_PTR_NUM 65535
 int *g_ptr[MAX_PTR_NUM] = { 0 };
-UINT16 g_ptr_num = 0;
+UINT16 g_add_num = 0;
+UINT16 g_del_num = 0;
 
 UINT16 get_free_ptr()
 {
 	int ix = 0;
 	for (; ix < MAX_PTR_NUM; ix++) {
 		if (NULL == g_ptr[ix]) {
-			g_ptr_num++;
+			g_add_num++;
 			return ix;
 		}
 
@@ -30,7 +30,7 @@ UINT16 get_used_ptr()
 	int ix = 0;
 	for (; ix < MAX_PTR_NUM; ix++) {
 		if (NULL != g_ptr[ix]) {
-			g_ptr_num--;
+			g_del_num++;
 			return ix;
 		}
 	}
@@ -56,7 +56,7 @@ int test()
 	int r = 0;
 	int *ptr = NULL;
 	UINT16 index = 0;
-
+	int randd = 0;
 
 	int a = calc_mem_level(1024);
 	a = calc_mem_level(1023);
@@ -71,8 +71,9 @@ int test()
 
 
 	while (1) {
-		srand((int)time(NULL) );
-		r = ((UINT16)rand());
+		randd = randd++ % 7;
+		srand((int)clock());
+		r = ( ((UINT16)rand())/randd) ;
 		if (r % 2) {
 			ptr = malloc_x(r);
 			if (NULL == ptr) {
