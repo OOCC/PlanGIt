@@ -69,7 +69,7 @@ SLL_NODE *FindFreeNodebyLevel(int level)
 
     while (NULL != pNodeTmp)
     {
-        if (false == bmp_get(g_bmp[level], BMP_OFFSET(pNodeTmp, level)) ) /* bmp值为1表示内存空间可以使用 */
+        if (false == bmp_get_bit(g_bmp[level], BMP_OFFSET(pNodeTmp, level)) ) /* bmp值为1表示内存空间可以使用 */
         {
             return pNodeTmp;
         }

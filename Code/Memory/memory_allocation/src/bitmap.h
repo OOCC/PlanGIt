@@ -14,8 +14,8 @@ typedef struct bmp {
 #define	BMP_WORD_MAX(m)		\
             ((BMP_WIDTH(m)+ BMP_WORD_WIDTH-1) / BMP_WORD_WIDTH)
         
-#define	BMP_WORD_GET(bm, word)		((bm)->pbits[(word)])
-#define	BMP_WORD_SET(bm, word, val)	((bm)->pbits[(word)] = (val))
+#define	BMP_WORD_GET(bm, word)		((bm).pbits[(word)])
+#define	BMP_WORD_SET(bm, word, val)	((bm).pbits[(word)] = (val))
 
 #define	BMP_WENT(bit)		((bit)/BMP_WORD_WIDTH)
 #define	BMP_WBIT(bit)		(1U<<((bit) % BMP_WORD_WIDTH))
@@ -58,7 +58,7 @@ typedef struct bmp {
 #define BMP_AND(bma, bmb)		BMP_BMOP(bma, bmb, &=)
 #define BMP_OR(bma, bmb)		BMP_BMOP(bma, bmb, |=)
 #define BMP_XOR(bma, bmb)		BMP_BMOP(bma, bmb, ^=)
-#define BMP_REMOVE(bma, bmb)	BMP_BMOP(bma, bmb, &= ~)
+#define BMP_CLEAR(bma, bmb)		BMP_BMOP(bma, bmb, &= ~)
 #define BMP_NEGATE(bma, bmb)	BMP_BMOP(bma, bmb, = ~)
         
 /* BIT BMP operators */
@@ -66,13 +66,11 @@ typedef struct bmp {
             (BMP_WORD_GET(bm,BMP_WENT(bit)))
 #define BMP_MEMBER(bm, bit)	\
             ((BMP_ENTRY(bm, bit) & BMP_WBIT(bit)) != 0)
-/*#define BMP_BIT_SET(bm, bit)	do { \
+#define BMP_BIT_SET(bm, bit)	do { \
                 BMP_CLEAR(bm); \
                 BMP_BIT_ADD(bm, bit); \
-            } while(0)*/
-#define BMP_BIT_SET(bm, bit)	do { \
-                BMP_BIT_ADD(bm, bit); \
             } while(0)
+
 #define BMP_BIT_ADD(bm, bit)	\
             (BMP_ENTRY(bm, bit) |= BMP_WBIT(bit))
 #define BMP_BIT_REMOVE(bm, bit)	\
@@ -80,12 +78,16 @@ typedef struct bmp {
 #define BMP_BIT_FLIP(bm, bit)	\
             (BMP_ENTRY(bm, bit) ^= BMP_WBIT(bit))
 
+#define BMP_BIT_GET(bm, bit) ((BMP_ENTRY(bm, bit) & BMP_WBIT(bit)) >> ((bit) % BMP_WORD_WIDTH   ))
+
+
 INT32 bmp_create(UINT32 **bmp, ULONG request_size);
 INT32 bmp_set(UINT32 *bmp, ULONG bit);
 INT32 bmp_get(UINT32 *bmp, ULONG bit);
 INT32 bmp_clear(UINT32 *bmp);
-INT32 bmp_add(UINT32 *bmp, ULONG bit);
-INT32 bmp_remove(UINT32 *bmp, ULONG bit);
+INT32 bmp_set_bit(UINT32 *bmp, ULONG bit);
+INT32 bmp_clear_bit(UINT32 *bmp, ULONG bit);
+INT32 bmp_get_bit(UINT32 *bmp, ULONG bit);
 INT32 bmp_delete(UINT32 *bmp);
 
 

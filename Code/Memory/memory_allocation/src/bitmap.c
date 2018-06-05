@@ -37,14 +37,12 @@ INT32 bmp_create(UINT32 **bmp, ULONG request_size)
 	
 	/* 根据request_size，计算出需要的bitmap obj(UINT32)个数 */
 	num = BMP_WORD_MAX(request_size); 
-	printf("num=%d\n", num);
 
 	for(ix = 0; ix < BMP_MAX_LEVEL; ix++) {
 		if(NULL == g_bmp[ix].pbits) {
 			g_bmp[ix].pbits = (UINT32 *)malloc(num*sizeof(UINT32));
-			printf("ix-%d: parent.pbits=0x%08x \n", ix, g_bmp[ix].pbits);
 			if(NULL == g_bmp[ix].pbits) { 
-				goto BMP_FAILED;
+				goto BMP_CREATE_FAILED;
 			} 
 			memset(g_bmp[ix].pbits, 0, num * sizeof(UINT32));
 
@@ -54,7 +52,7 @@ INT32 bmp_create(UINT32 **bmp, ULONG request_size)
 		}
 	}
 
-BMP_FAILED:	
+BMP_CREATE_FAILED:	
 	bmp = NULL; /* 楼上的SB，我这里分配失败了 */
 	return VOS_ERR;
 }
@@ -104,7 +102,7 @@ INT32 bmp_clear(UINT32 *bmp)
 }
 
 /****************************************************************************
-   function name :      bmp_clear
+   function name :      bmp_set_bit
            input :           
           output :   
     return value :
@@ -113,26 +111,26 @@ INT32 bmp_clear(UINT32 *bmp)
                         在一组位图内将某一位置位
                         
 ****************************************************************************/
-INT32 bmp_add(UINT32 *bmp, ULONG bit)
+INT32 bmp_set_bit(UINT32 *bmp, ULONG bit)
 {
-	bmp_t *parent = NULL;
+	INT32 ix = 0;
 
 	/* bmp为NULL，还设置个毛线啊 */
 	if(NULL == bmp)
 		return VOS_ERR;
 	
-	/* 获取管理结构体 */
-	parent = container_of(bmp, bmp_t, pbits);
-	if (NULL == parent)
-		return VOS_ERR;
+    for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
+        if (bmp == g_bmp[ix].pbits) {
+            BMP_BIT_ADD(g_bmp[ix], bit);
+            return VOS_OK;
+        }
+    }
 
-	BMP_BIT_ADD(parent, bit);
-	
-	return VOS_OK;
+	return VOS_ERR;
 }
 
 /****************************************************************************
-   function name :      bmp_remove
+   function name :      bmp_clear_bit
            input :           
           output :   
     return value :
@@ -141,21 +139,52 @@ INT32 bmp_add(UINT32 *bmp, ULONG bit)
                         在一组位图内将某一位清0
                         
 ****************************************************************************/
-INT32 bmp_remove(UINT32 *bmp, ULONG bit)
+INT32 bmp_clear_bit(UINT32 *bmp, ULONG bit)
 {
-	bmp_t *parent = NULL;
+	INT32 ix = 0;
 
-	if(NULL == bmp)
-		return VOS_ERR;
+    if(NULL == bmp)
+    		return VOS_ERR;
+    	
+    for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
+        if (bmp == g_bmp[ix].pbits) {
+            BMP_BIT_REMOVE(g_bmp[ix], bit);
+            return VOS_OK;
+        }
+    }
 
-	parent = container_of(bmp, bmp_t, pbits);
-	if (NULL == parent)
-		return VOS_ERR;
-
-	BMP_BIT_REMOVE(parent, bit);
-
-	return VOS_OK;	
+	return VOS_ERR;
 }
+
+
+/****************************************************************************
+   function name :      bmp_get_bit_bit
+           input :           
+          output :   
+    return value :
+         history :      
+               1 :      2018-6-4 created by MarvinXie
+                        获取位图中指定位的值
+                        
+****************************************************************************/
+INT32 bmp_get_bit(UINT32 *bmp, ULONG bit)
+{
+	INT32 ix = 0;
+    INT32 ret = 0;
+
+	if(NULL == bmp) 
+        return VOS_ERR;
+
+     for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
+        if (bmp == g_bmp[ix].pbits) {
+			ret = BMP_BIT_GET(g_bmp[ix], bit);
+            return ret;
+        }
+    }   
+
+    return VOS_ERR;	
+}
+
 
 /****************************************************************************
    function name :      bmp_delete
@@ -169,9 +198,23 @@ INT32 bmp_remove(UINT32 *bmp, ULONG bit)
 ****************************************************************************/
 INT32 bmp_delete(UINT32 *bmp)
 {
+	INT32 ix = 0;
+
 	if(bmp) {
-		free(bmp);
-		bmp = NULL;
-	}
-	return VOS_OK;
+        for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
+            if (bmp == g_bmp[ix].pbits) {
+                free(g_bmp[ix].pbits);
+                g_bmp[ix].request_size = 0;
+                return VOS_OK;
+            }
+        }
+    }
+
+	return VOS_ERR;	
+}
+
+
+bmp_t *bmp_get_bit_parent(void)
+{
+    return g_bmp;
 }
