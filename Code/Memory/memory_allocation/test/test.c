@@ -8,7 +8,7 @@
 #include <time.h>
 
 #define MAX_PTR_NUM 65535
-int *g_ptr[MAX_PTR_NUM] = { 0 };
+char *g_ptr[MAX_PTR_NUM] = { 0 };
 UINT16 g_add_num = 0;
 UINT16 g_del_num = 0;
 UINT16 g_num = 0; 
@@ -63,19 +63,26 @@ int test()
 	while (1) {
  		g_num = g_add_num - g_del_num;
 		randd = randd++ % 7;
-		srand((int)clock());
+		srand((int)time(0));
 		r = ( ((UINT16)rand())) ;
 		if (r % 2) {
-			ptr = malloc_x(r*16);
+			ptr = malloc_x(r*8);
 			if (NULL == ptr) { 
 				free_all_mem();
 				continue;
 			}
+			/* 检查分配指针的范围 */
+			if (ptr > g_FirstAddress + MEM_SIZE * 1024 || ptr < g_FirstAddress)
+				return; 
+
 			/* save ptr to array */
 			index = get_free_ptr();
 			if (0xffff == index)
 				return index;
 			g_ptr[index] = ptr;
+
+			memset(ptr, 0xc, r * 16);
+
 		}
 		else {
 			index = get_used_ptr();
@@ -104,12 +111,13 @@ int main()
 
     p1 = malloc_x(31);
     p = (SLL_NODE *)p1;
+	memset(p, 0xc, 31);
     free_x(p1);
 
 
     p3 = malloc_x(21);
     p = (SLL_NODE *)p3;
-    p4 = malloc_x(10000000);
+    p4 = malloc_x(10000);
     p = (SLL_NODE*)p4;
 	free_x(p3);
     free_x(p4);

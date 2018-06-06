@@ -23,7 +23,7 @@
 /* 全局变量 */
 SLL   g_pLLMemList[MAX_LEVEL+1]   = {0};
 char  g_MemData[MEM_SIZE*1024]    = {0};  /* 仅仅做测试使用 */
-char *g_MemoryData                = g_MemData;  /* 这里写需要初始化的内存地址 */
+char *g_FirstAddress              = g_MemData;  /* 这里写需要初始化的内存地址 */
 unsigned int  *g_bmp[MAX_LEVEL+1]          = {0};   
 
 
@@ -53,14 +53,14 @@ void bmp_init()
 ULONG MEM_ALLOCA_LLNODE_INIT(ULONG ulMemIndex, SLL *pList, ULONG level, ULONG ulListNum )
 {
     ULONG index = 0;
-    SLL_NODE *pNode = NULL;
+    char *address = 0;
 
     for (index = 0; index < ulListNum; index++)
     {
         /* ulMemIndex是偏移量，表示当前初始化到内存空间的哪个位置了 */
-        pNode = g_MemoryData + ulMemIndex;
+        address = g_FirstAddress + ulMemIndex;
         
-		SLL_ADD(pList, pNode, 0);
+		SLL_ADD(pList, address, 0);
         //bmp_set_bit(g_bmp[level], BMP_OFFSET(pNode, level));
 
         ulMemIndex += (1<<level)*1024; 
@@ -158,20 +158,20 @@ int calc_mem_level(ULONG size)
                         拆开一个NODE，使其成为两个小NODE，并且左边的为使用，右边的为空闲
                         
 ****************************************************************************/
-ULONG MEM_separateNode(ULONG ulListLevel, SLL_NODE *pNode)
+ULONG MEM_separateNode(ULONG ulListLevel, char *address)
 {
     ULONG ulSmallLevel = ulListLevel - 1;
-    
+
     /* 先删除大的节点 */
-    SLL_DEL(&g_pLLMemList[ulListLevel], pNode);
-    bmp_clear_bit(g_bmp[ulListLevel], BMP_OFFSET(pNode, ulListLevel));
-    
+    bmp_clear_bit(g_bmp[ulListLevel], BMP_OFFSET(address, ulListLevel));
+    SLL_DEL(&g_pLLMemList[ulListLevel], address);
+
     /* 再添加小的节点 */
-   	SLL_ADD(&g_pLLMemList[ulSmallLevel], pNode, 1);
-  	SLL_ADD(&g_pLLMemList[ulSmallLevel], (char *)pNode + (1 << ulSmallLevel) * 1024, 0);
-    bmp_set_bit(g_bmp[ulSmallLevel], BMP_OFFSET(pNode, ulSmallLevel));
-    
-    return VOS_OK;
+    SLL_ADD(&g_pLLMemList[ulSmallLevel], address, 1);
+    SLL_ADD(&g_pLLMemList[ulSmallLevel], address + (1 << ulSmallLevel) * 1024, 0);
+    bmp_set_bit(g_bmp[ulSmallLevel], BMP_OFFSET(address, ulSmallLevel));
+
+    return FindNode(ulSmallLevel, address);
 
 }
 
@@ -223,8 +223,7 @@ SLL_NODE *MEM_allocBlock(int ulNeedBlockLevel)
     SLL_NODE *pNode = NULL;
     ULONG ulCanAllocLevel = NULL_ULONG;
     ULONG ulCanAllocLevelTmp = NULL_ULONG;    
-    SLL_NODE *pNodeSmall = NULL;
-    
+
     /* 找到能够申请内存的节点和ListIndex */
     pNode = MEM_findCanAllocLevel(ulNeedBlockLevel, &ulCanAllocLevel);
     if (NULL == pNode && NULL_ULONG == ulCanAllocLevel)
@@ -235,7 +234,7 @@ SLL_NODE *MEM_allocBlock(int ulNeedBlockLevel)
 
     if (ulNeedBlockLevel == ulCanAllocLevel)
     {
-        bmp_set_bit(g_bmp[ulCanAllocLevel], BMP_OFFSET(pNode, ulCanAllocLevel));
+        bmp_set_bit(g_bmp[ulCanAllocLevel], BMP_OFFSET(pNode->address, ulCanAllocLevel));
         pNode->used = 1;
         return pNode;
     }
@@ -246,7 +245,7 @@ SLL_NODE *MEM_allocBlock(int ulNeedBlockLevel)
         /* 如果level不能等于合适的level，就分裂           */
         while (ulCanAllocLevelTmp != ulNeedBlockLevel)
         {
-            (VOID)MEM_separateNode(ulCanAllocLevelTmp, pNode);
+			pNode = MEM_separateNode(ulCanAllocLevelTmp, pNode->address);
 
             if (ulCanAllocLevelTmp != 0)
             {
@@ -297,7 +296,7 @@ void *malloc_x(ULONG ulSize)
         return NULL;
     }
 
-    return pNode;
+    return (void *)pNode->address;
 }
 
 
@@ -316,21 +315,21 @@ void *malloc_x(ULONG ulSize)
 SLL_NODE *MEM_findBuddyForBlock(ULONG ulBloackLevel, SLL_NODE * pNode)
 {   
     ULONG offset = NULL_ULONG;
+    char *pBuddyAddress = NULL;
     SLL_NODE *pBuddy = NULL;
-
     
     /* 先除以对应的数据块level，用于后面判断 */
-    offset = BMP_OFFSET(pNode, ulBloackLevel);
+    offset = BMP_OFFSET(pNode->address, ulBloackLevel);
 
     /* 根据奇偶判断伙伴是在左边还是右边，偶数伙伴在右边。  */
     if ((offset % 2) == 0)
-        pBuddy = (char *)pNode + (1<<ulBloackLevel)*1024;
+        pBuddyAddress = (char *)pNode->address + (1<<ulBloackLevel)*1024;
     else
-        pBuddy = (char *)pNode - (1<<ulBloackLevel)*1024;
+        pBuddyAddress = (char *)pNode->address - (1<<ulBloackLevel)*1024;
    
-    if (pBuddy == FindNode(ulBloackLevel, pBuddy))
+    if (pBuddy = FindNode(ulBloackLevel, pBuddyAddress))
     {
-        if ( false == bmp_get_bit(g_bmp[ulBloackLevel], BMP_OFFSET(pBuddy, ulBloackLevel)) )
+        if ( false == bmp_get_bit(g_bmp[ulBloackLevel], BMP_OFFSET(pBuddy->address, ulBloackLevel)) )
         {
            return pBuddy;
         }
@@ -343,33 +342,32 @@ SLL_NODE *MEM_findBuddyForBlock(ULONG ulBloackLevel, SLL_NODE * pNode)
 
 ULONG MEM_combineNode(ULONG level, SLL_NODE *pBuddyNode, SLL_NODE *pNode, SLL_NODE **ppCombineNode)
 {
-    SLL_NODE *pCombineNode = NULL; 
     ULONG ulCombineLevel = level + 1;
-
+    char *pCombineAddress = NULL;
+    
     if (NULL == pBuddyNode || NULL == pNode)
     {
         return VOS_ERR;
     }
 
-    if (pBuddyNode > pNode)
+    if (pBuddyNode->address > pNode->address)
     {
-        pCombineNode = pNode;
+        pCombineAddress = pNode->address;
     }
     else
     {
-        pCombineNode = pBuddyNode;
+        pCombineAddress = pBuddyNode->address;
     }
 
+	bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode->address, level));
+    SLL_DEL(&g_pLLMemList[level], pNode->address);
+	bmp_clear_bit(g_bmp[level], BMP_OFFSET(pBuddyNode->address, level));
+    SLL_DEL(&g_pLLMemList[level], pBuddyNode->address);
 
-    SLL_DEL(&g_pLLMemList[level], pNode);
-    bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
-    SLL_DEL(&g_pLLMemList[level], pBuddyNode);
-    bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
+    SLL_ADD(&g_pLLMemList[ulCombineLevel], pCombineAddress, 0);
+    bmp_set_bit(g_bmp[ulCombineLevel], BMP_OFFSET(pCombineAddress, ulCombineLevel));
 
-    SLL_ADD(&g_pLLMemList[ulCombineLevel], pCombineNode, 0);
-    bmp_set_bit(g_bmp[ulCombineLevel], BMP_OFFSET(pCombineNode, ulCombineLevel));
-    
-    *ppCombineNode = pCombineNode;
+    *ppCombineNode = FindNode(ulCombineLevel, pCombineAddress);
 
     return VOS_OK;
     
@@ -400,13 +398,10 @@ ULONG free_x(VOID *p)
     if (NULL == p)
        return VOS_ERR;
 
-    pNode = (SLL_NODE *)p;
-
-    level = FindLevelByNode(pNode);
-    if (level == NULL_ULONG)
+    if (VOS_OK != FindNodeByAddress((char *)p, &level, &pNode))
         return VOS_ERR;
     
-    used = bmp_get_bit(g_bmp[level], BMP_OFFSET(pNode, level)); 
+    used = bmp_get_bit(g_bmp[level], BMP_OFFSET(pNode->address, level)); 
     if (false == used)
         return VOS_ERR;
 
@@ -414,7 +409,7 @@ ULONG free_x(VOID *p)
     {
         if (MAX_LEVEL == level)
         {
-        	bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
+        	bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode->address, level));
         	return VOS_OK;
         }
 
@@ -422,7 +417,7 @@ ULONG free_x(VOID *p)
 
         if (NULL == pBuddyNode)
         {
-			bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode, level));
+			bmp_clear_bit(g_bmp[level], BMP_OFFSET(pNode->address, level));
 			return VOS_OK;
         }
 

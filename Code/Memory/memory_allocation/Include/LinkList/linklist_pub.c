@@ -15,6 +15,7 @@
 #include "linklist_pub.h"
 #include "buddy_algorithm.h"
 #include "bitmap.h"
+#include "stdlib.h"
 
 /****************************************************************************
    function name :      FindNodeByList
@@ -26,11 +27,11 @@
                1 :      2016-12-08 created by xueyu
                         遍历链表，找到指定节点的上一个节点地址（为了拿来删节点）                        
 ****************************************************************************/
-SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
+SLL_NODE *FindNodeByList(SLL *pList, char *address)
 {
     SLL_NODE *pTmpNode = NULL;
     
-    if (NULL == pList || NULL == pNode)
+    if (NULL == pList )
     {
         return NULL;
     }
@@ -41,7 +42,7 @@ SLL_NODE *FindNodeByList(SLL *pList, SLL_NODE *pNode)
     while (NULL != pTmpNode->pNext)
     {
         /* 预取下一个节点地址来与pNode进行对比 */
-        if (pTmpNode->pNext == pNode)
+        if (pTmpNode->pNext->address == address)
         {
             return pTmpNode;
         }
@@ -69,7 +70,7 @@ SLL_NODE *FindFreeNodebyLevel(int level)
 
     while (NULL != pNodeTmp)
     {
-        if (false == bmp_get_bit(g_bmp[level], BMP_OFFSET(pNodeTmp, level)) ) /* bmp值为1表示内存空间可以使用 */
+        if (false == bmp_get_bit(g_bmp[level], BMP_OFFSET(pNodeTmp->address, level)) ) /* bmp值为1表示内存空间可以使用 */
         {
             return pNodeTmp;
         }
@@ -79,7 +80,7 @@ SLL_NODE *FindFreeNodebyLevel(int level)
     return NULL;
 }
 
-ULONG FindLevelByNode(SLL_NODE *pNode)
+ULONG FindNodeByAddress(char *address, int *level_out, SLL_NODE **ppNode)
 {
     SLL_NODE *pNodeTmp = NULL;
     int level = MAX_LEVEL;
@@ -91,14 +92,17 @@ ULONG FindLevelByNode(SLL_NODE *pNode)
         
         while (NULL != pNodeTmp)
         {
-            if (pNodeTmp == pNode)
+            if (pNodeTmp->address == address)
             {
-                return level;
+                *ppNode = pNodeTmp;
+
+                *level_out = level;
+                return VOS_OK;
             }
             pNodeTmp = pNodeTmp->pNext;
         }
     }
-    return NULL_ULONG;
+    return VOS_ERR;
     
 }
 
@@ -112,16 +116,16 @@ ULONG FindLevelByNode(SLL_NODE *pNode)
     return value :
          history :      
                1 :      2016-12-08 created by xueyu
-                        遍历链表，通过index找到对应level的节点                        
+                        遍历链表，查找对应address和level的节点是否存在
 ****************************************************************************/
-SLL_NODE *FindNode(ULONG level, SLL_NODE *pNode)
+SLL_NODE *FindNode(ULONG level, char *address)
 {
     SLL_NODE *pNodeTmp = NULL;
     pNodeTmp = g_pLLMemList[level].stHead.pNext;
 
     while (NULL != pNodeTmp)
     {
-        if (pNode == pNodeTmp) /* bmp值为1表示内存空间可以使用 */
+        if (address == pNodeTmp->address)
         {
             return pNodeTmp;
         }
@@ -147,17 +151,25 @@ SLL_NODE *FindNode(ULONG level, SLL_NODE *pNode)
                         修改为单向链表
 ****************************************************************************/
 
-void InsertNode(SLL *pList, SLL_NODE *pNode, char used)
+void InsertNode(SLL *pList, char *address, char used)
 {
     ULONG ulListIndex = NULL_ULONG;
+    SLL_NODE *pNode = NULL;
 
-    if (NULL == pList || NULL == pNode)
+    if (NULL == pList )
     {
         //LOG_ERROR();��δʵ��
         return;
     }
-    
-    pList->ulNodeNum++;
+
+    /* 判断地址合法性 */
+    if (address > g_FirstAddress + MEM_SIZE*1024 || address < g_FirstAddress)
+        return;
+
+    pNode = malloc(sizeof(SLL_NODE));
+    if (NULL == pNode)
+        return;
+        
     
 	/* 这里不能用head来判断，因为head指向了g_pLLMemList的首地址，是有值的 */
 	if (pList->pstTail == NULL)
@@ -172,8 +184,10 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, char used)
         pNode->pNext = NULL;            	/* �ٽ�pNode֮����ΪNULL */
         pList->pstTail = pNode;      		/* ������pstTail��ֵ����ΪpNode */
     }
-
+    pList->ulNodeNum++;
+    pNode->address = address;
     pNode->used = used;
+    
     return;
 }
 
@@ -191,20 +205,25 @@ void InsertNode(SLL *pList, SLL_NODE *pNode, char used)
                         
 ****************************************************************************/
 
-void DeleteNode(SLL *pList, SLL_NODE *pNode)
+void DeleteNode(SLL *pList, char *address)
 {
     SLL_NODE *pLast = NULL;
-    
-    if (NULL == pList || NULL == pNode)
+    SLL_NODE *pNode = NULL;
+    if (NULL == pList )
     {
         return;
     }
     
-    pLast = FindNodeByList(pList, pNode);
+    /* 判断地址合法性 */
+    if (address > g_FirstAddress + MEM_SIZE*1024 || address < g_FirstAddress)
+        return;
+    
+    pLast = FindNodeByList(pList, address);
     if (NULL == pLast)
     {
         return;
     }
+    pNode = pLast->pNext;
      
     pList->ulNodeNum--;  /* 能找到指定节点的位置，说明链表节点数量一定可以自减，不用先判断是否等于0 */
     
@@ -227,7 +246,8 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode)
     pLast->pNext = pNode->pNext;
     pNode->pNext = NULL;
 	pNode->used = 0;
-
+    pNode->address = 0;
+    
     return;
 }
 
