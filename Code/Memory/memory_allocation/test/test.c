@@ -46,6 +46,7 @@ void free_all_mem()
 		if (NULL != g_ptr[ix]) {
 			free_x(g_ptr[ix]);
 			g_ptr[ix] = NULL;
+			g_del_num++;
 		}
 	}
 	return;
@@ -81,7 +82,7 @@ int test()
 				return index;
 			g_ptr[index] = ptr;
 
-			memset(ptr, 0xc, r * 16);
+			memset(ptr, 0xc, r * 8);
 
 		}
 		else {
