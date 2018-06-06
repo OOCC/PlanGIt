@@ -11,6 +11,7 @@
 int *g_ptr[MAX_PTR_NUM] = { 0 };
 UINT16 g_add_num = 0;
 UINT16 g_del_num = 0;
+UINT16 g_num = 0; 
 
 UINT16 get_free_ptr()
 {
@@ -71,12 +72,13 @@ int test()
 
 
 	while (1) {
+		g_num = g_add_num - g_del_num;
 		randd = randd++ % 7;
 		srand((int)clock());
 		r = ( ((UINT16)rand())/randd) ;
 		if (r % 2) {
 			ptr = malloc_x(r);
-			if (NULL == ptr) {
+			if (NULL == ptr) { 
 				free_all_mem();
 				continue;
 			}
