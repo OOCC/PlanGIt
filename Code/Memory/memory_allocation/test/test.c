@@ -59,25 +59,14 @@ int test()
 	UINT16 index = 0;
 	int randd = 0;
 
-	int a = calc_mem_level(1024);
-	a = calc_mem_level(1023);
-	a = calc_mem_level(1);
-	a = calc_mem_level(1024+100);
-	a = calc_mem_level(1024 + 1024);
-	a = calc_mem_level(1024*3 -1);
-	a = calc_mem_level(1024*3);
-
-
-
-
 
 	while (1) {
-		g_num = g_add_num - g_del_num;
+ 		g_num = g_add_num - g_del_num;
 		randd = randd++ % 7;
 		srand((int)clock());
-		r = ( ((UINT16)rand())/randd) ;
+		r = ( ((UINT16)rand())) ;
 		if (r % 2) {
-			ptr = malloc_x(r);
+			ptr = malloc_x(r*16);
 			if (NULL == ptr) { 
 				free_all_mem();
 				continue;

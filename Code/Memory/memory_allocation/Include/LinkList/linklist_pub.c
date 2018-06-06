@@ -205,15 +205,23 @@ void DeleteNode(SLL *pList, SLL_NODE *pNode)
     {
         return;
     }
-    
+     
     pList->ulNodeNum--;  /* 能找到指定节点的位置，说明链表节点数量一定可以自减，不用先判断是否等于0 */
     
     /* 如果要删除的是尾节点 */
     if (NULL == pNode->pNext)
     {
         pList->pstTail = pLast;
+       
+        if (pList->pstTail == &pList->stHead)
+            pList->pstTail = NULL;
     }   
-        
+
+    /* 如果删除的是首节点 */
+    if (pNode == pList->stHead.pNext)
+    {
+        pList->stHead.pNext = pNode->pNext;
+    }    
     
     /* 先连后断，因为先断了就找不到位置了 */
     pLast->pNext = pNode->pNext;
