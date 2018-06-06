@@ -53,7 +53,7 @@ INT32 bmp_create(UINT32 **bmp, ULONG request_size)
 	}
 
 BMP_CREATE_FAILED:	
-	bmp = NULL; /* 楼上的SB，我这里分配失败了 */
+	*bmp = NULL; /* 楼上的SB，我这里分配失败了 */
 	return VOS_ERR;
 }
 
@@ -121,6 +121,8 @@ INT32 bmp_set_bit(UINT32 *bmp, ULONG bit)
 	
     for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
         if (bmp == g_bitmap[ix].pbits) {
+			if (bit >= g_bitmap[ix].request_size) /* 兄弟，越界了 */
+				return VOS_ERR;
             BMP_BIT_ADD(g_bitmap[ix], bit);
             return VOS_OK;
         }
@@ -148,6 +150,8 @@ INT32 bmp_clear_bit(UINT32 *bmp, ULONG bit)
     	
     for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
         if (bmp == g_bitmap[ix].pbits) {
+			if (bit >= g_bitmap[ix].request_size)
+				return VOS_ERR;			
             BMP_BIT_REMOVE(g_bitmap[ix], bit);
             return VOS_OK;
         }
@@ -177,6 +181,8 @@ INT32 bmp_get_bit(UINT32 *bmp, ULONG bit)
 
      for (ix = 0; ix < BMP_MAX_LEVEL; ix++) {
         if (bmp == g_bitmap[ix].pbits) {
+			if (bit >= g_bitmap[ix].request_size)
+				return VOS_ERR;			
 			ret = BMP_BIT_GET(g_bitmap[ix], bit);
             return ret;
         }
