@@ -23,7 +23,7 @@
 /* 全局变量 */
 SLL   g_pLLMemList[MAX_LEVEL+1]   = {0};
 char  g_MemData[MEM_SIZE*1024]    = {0};  /* 仅仅做测试使用 */
-char *g_FirstAddress              = g_MemData;  /* 这里写需要初始化的内存地址 */
+char *g_FirstAddress              = g_MemData;  /* 这里写需要初始化的内存地址，只能是偶数，因为找伙伴默认它是偶数的。有需要可以自己改 */
 unsigned int  *g_bmp[MAX_LEVEL+1]          = {0};   
 
 
