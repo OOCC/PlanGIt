@@ -247,6 +247,7 @@ void DeleteNode(SLL *pList, char *address)
     pNode->pNext = NULL;
 	pNode->used = 0;
     pNode->address = 0;
+	free(pNode);
     
     return;
 }
